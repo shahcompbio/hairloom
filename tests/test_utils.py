@@ -1,7 +1,8 @@
 import pandas as pd
 from pysam import AlignedSegment
 
-from hairloom.utils import enumerate_breakpoints, get_secondaries, make_split_read_table
+from hairloom.utils import enumerate_breakpoints, get_secondaries, make_split_read_table, make_seg_table, make_brk_table, make_brk_supports, make_tra_table
+
 
 class MockAlignment:
     """A mock class to simulate alignment objects for testing"""
@@ -15,6 +16,30 @@ class MockAlignment:
         self.match = match
         self.clip2 = clip2
         self.pclip1 = pclip1
+
+
+class MockBreakpoint:
+    """A mock class to simulate Breakpoint objects."""
+    def __init__(self, chrom, pos, ori):
+        self.chrom = chrom
+        self.pos = pos
+        self.ori = ori
+
+
+class MockSegment:
+    """A mock class to simulate Segment objects."""
+    def __init__(self, brk1, brk2, aln_segment=None):
+        self.brk1 = brk1
+        self.brk2 = brk2
+        self.aln_segment = aln_segment
+
+
+class MockBreakpointChain:
+    """A mock class to simulate BreakpointChain objects."""
+    def __init__(self, segs=None, tras=None):
+        self.segs = segs if segs else []
+        self.tras = tras if tras else []
+
 
 def test_enumerate_breakpoints():
     df = pd.DataFrame({
@@ -38,6 +63,7 @@ def test_enumerate_breakpoints():
     assert brks[3] == brks[-1], brks[3]
     assert brks[3].pos == 152942012, brks[3]
     assert brks[3].ori == '-', brks[3]
+
 
 def test_get_secondaries():
     # Case 1: Read with a valid 'SA' tag
@@ -70,6 +96,7 @@ def test_get_secondaries():
     ]
     expected_result_multiple = ['chr3,300,+,50M,30', 'chr4,400,-,40M,40']
     assert get_secondaries(read_with_multiple_tags) == expected_result_multiple
+
 
 def test_make_split_read_table():
     # Test case 1: Valid alignments
@@ -120,3 +147,77 @@ def test_make_split_read_table():
     result_df = make_split_read_table(alignments)
 
     pd.testing.assert_frame_equal(result_df, expected_df)
+
+
+def test_make_seg_table():
+    # Prepare test data
+    brk1 = MockBreakpoint("chr1", 100, "+")
+    brk2 = MockBreakpoint("chr1", 200, "-")
+    segment = MockSegment(brk1, brk2)
+    bundle = [MockBreakpointChain(segs=[segment])]
+
+    seg_supports = {("chr1", 100, 200): 10}
+
+    # Test function
+    result = make_seg_table(bundle, seg_supports)
+    expected = pd.DataFrame({"chrom": ["chr1"], "pos1": [100], "pos2": [200], "support": [10]})
+    pd.testing.assert_frame_equal(result, expected)
+
+
+def test_make_brk_table():
+    # Prepare test data
+    brk1 = MockBreakpoint("chr1", 100, "+")
+    brk2 = MockBreakpoint("chr1", 200, "-")
+    bundle = [[brk1, brk2]]
+
+    brk_supports = {("chr1", 100, "+"): 10, ("chr1", 200, "-"): 15}
+
+    # Test function
+    result = make_brk_table(bundle, brk_supports)
+    expected = pd.DataFrame({
+        "chrom": ["chr1", "chr1"],
+        "pos": [100, 200],
+        "ori": ["+", "-"],
+        "support": [10, 15]
+    })
+    pd.testing.assert_frame_equal(result, expected)
+
+
+def test_make_brk_supports():
+    # Prepare test data
+    brk1 = MockBreakpoint("chr1", 100, "+")
+    brk2 = MockBreakpoint("chr1", 200, "-")
+    bundle = [[brk1, brk2, brk1]]
+
+    # Test function
+    result = make_brk_supports(bundle)
+    result.index.names = [None, None, None]  # Match the expected index name structure
+    expected = pd.Series(
+        data=[2, 1],
+        index=pd.MultiIndex.from_tuples([("chr1", 100, "+"), ("chr1", 200, "-")]),
+        name="count"
+    )
+    pd.testing.assert_series_equal(result, expected)
+
+
+def test_make_tra_table():
+    # Prepare test data
+    brk1 = MockBreakpoint("chr1", 100, "+")
+    brk2 = MockBreakpoint("chr2", 200, "-")
+    translocation = MockSegment(brk1, brk2)
+    bundle = [MockBreakpointChain(tras=[translocation])]
+
+    tra_supports = {(("chr1", 100, "+"), ("chr2", 200, "-")): 5}
+
+    # Test function
+    result = make_tra_table(bundle, tra_supports)
+    expected = pd.DataFrame({
+        "chrom1": ["chr1"],
+        "pos1": [100],
+        "ori1": ["+"],
+        "chrom2": ["chr2"],
+        "pos2": [200],
+        "ori2": ["-"],
+        "support": [5]
+    })
+    pd.testing.assert_frame_equal(result, expected)

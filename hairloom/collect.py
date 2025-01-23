@@ -4,8 +4,8 @@ import tqdm
 import pandas as pd
 import pysam
 
-from .utils import get_secondaries, make_split_read_table, enumerate_breakpoints
-from .datatypes import SplitAlignment, Breakpoint, BreakpointPair, BreakpointChain
+from hairloom.utils import get_secondaries, make_split_read_table, enumerate_breakpoints
+from hairloom.datatypes import SplitAlignment, Breakpoint, BreakpointPair
 
 def extract_split_alignments(reads, max_reads=500) -> list:
     """Extract ``SplitAlignment`` objects from IteratorRow with a max_reads parameter
@@ -256,7 +256,6 @@ def get_svtype(tra:BreakpointPair):
     translocation = 'TRA'
     inversion = 'INV'
     duplication = 'DUP'
-    insertion = 'INS'
     deletion = 'DEL'
     chrom1 = tra.brk1.chrom
     chrom2 = tra.brk2.chrom

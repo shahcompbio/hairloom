@@ -1,6 +1,7 @@
+import numpy as np
 import pandas as pd
 
-from .datatypes import Breakpoint, BreakpointChain
+from hairloom.datatypes import Breakpoint, BreakpointChain
 
 def enumerate_breakpoints(df):
     """
@@ -181,3 +182,219 @@ def reverse_complement(seq):
     comp = {'A':'T', 'C':'G', 'G':'C', 'T':'A', 'N':'.'}
     revcmp = ''.join([comp[b] for b in seq[::-1]])
     return revcmp
+
+
+def make_seg_table(bundle, seg_supports, chroms=None):
+    """
+    Creates a table of genomic segments with support information.
+
+    This function processes a bundle of `BreakpointChain` objects, extracts genomic segment
+    coordinates, and combines them with support data into a structured pandas DataFrame.
+
+    Args:
+        bundle (list of BreakpointChain): A list of `BreakpointChain` objects containing 
+            segment information.
+        seg_supports (dict): A dictionary where keys are segment coordinates 
+            (chrom, pos1, pos2) and values are support counts.
+        chroms (list of str, optional): A list of chromosomes to include. If None, all chromosomes
+            are considered. Defaults to None.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing the segment table with the following columns:
+            - 'chrom': Chromosome name.
+            - 'pos1': Start position of the segment.
+            - 'pos2': End position of the segment.
+            - 'support': Support count for the segment.
+
+    Notes:
+        - Segments are filtered based on the `chroms` parameter if provided.
+        - Infinite values in the resulting DataFrame are replaced with NaN for consistency.
+
+    Example:
+        >>> from your_module import BreakpointChain, make_seg_table
+        >>> bundle = [...]  # List of BreakpointChain objects
+        >>> seg_supports = {
+        ...     ('chr1', 100, 200): 10,
+        ...     ('chr1', 300, 400): 15
+        ... }
+        >>> seg_df = make_seg_table(bundle, seg_supports, chroms=["chr1"])
+        >>> print(seg_df.head())
+           chrom  pos1  pos2  support
+        0  chr1   100   200       10
+        1  chr1   300   400       15
+    """
+    seg_saved = set()
+    data = []
+    
+    for brks in bundle:
+        for seg in brks.segs:
+            assert seg.brk1.chrom == seg.brk2.chrom
+            chrom = seg.brk1.chrom
+            if chroms:
+                if chrom not in chroms: 
+                    continue
+            pos1 = seg.brk1.pos
+            pos2 = seg.brk2.pos
+            ori1 = seg.brk1.ori
+            ori2 = seg.brk2.ori
+            if pos1 > pos2:
+                pos1, ori1, pos2, ori2 = pos2, ori2, pos1, ori1
+            coord = (chrom, pos1, pos2)
+            if coord not in seg_saved:
+                seg_saved.add(coord)
+            else:
+                continue
+            if coord not in seg_supports:
+                continue
+            support = seg_supports[coord]
+            field = [*coord, support]
+            
+            data.append(field)
+    seg_cols = ['chrom', 'pos1', 'pos2', 'support']
+    seg_df = pd.DataFrame(data, columns=seg_cols)
+    seg_df.replace([-np.inf, np.inf], np.nan, inplace=True) 
+    return seg_df
+
+
+def make_brk_table(bundle, brk_supports, chroms=None):
+    """
+    Creates a table of breakpoints with support information.
+
+    This function processes a bundle of `BreakpointChain` objects, extracts breakpoint
+    coordinates, and combines them with support data into a structured pandas DataFrame.
+
+    Args:
+        bundle (list of BreakpointChain): A list of `BreakpointChain` objects containing 
+            breakpoint information.
+        brk_supports (dict): A dictionary where keys are breakpoint coordinates 
+            (chrom, pos, ori) and values are support counts.
+        chroms (list of str, optional): A list of chromosomes to include. If None, all chromosomes
+            are considered. Defaults to None.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing the breakpoint table with the following columns:
+            - 'chrom': Chromosome name.
+            - 'pos': Position of the breakpoint.
+            - 'ori': Orientation of the breakpoint ('+' or '-').
+            - 'support': Support count for the breakpoint.
+
+    Notes:
+        - Breakpoints are filtered based on the `chroms` parameter if provided.
+        - Infinite values in the resulting DataFrame are replaced with NaN for consistency.
+
+    Example:
+        >>> from your_module import BreakpointChain, make_brk_table
+        >>> bundle = [...]  # List of BreakpointChain objects
+        >>> brk_supports = {
+        ...     ('chr1', 100, '+'): 10,
+        ...     ('chr1', 200, '-'): 15
+        ... }
+        >>> brk_df = make_brk_table(bundle, brk_supports, chroms=["chr1"])
+        >>> print(brk_df.head())
+           chrom  pos ori  support
+        0  chr1  100   +       10
+        1  chr1  200   -       15
+    """
+    brk_saved = set()
+    data = []
+    for brks in bundle:
+        for brk in brks:
+            if chroms:
+                if brk.chrom not in chroms:
+                    continue
+            coord = (brk.chrom, brk.pos, brk.ori)
+            if coord not in brk_saved:
+                brk_saved.add(coord)
+            else:
+                continue
+            support = brk_supports[coord]
+            field = [*coord, support]
+            data.append(field)
+
+    brk_cols = ['chrom', 'pos', 'ori', 'support']
+    brk_df = pd.DataFrame(data, columns=brk_cols)
+    brk_df.replace([-np.inf, np.inf], np.nan, inplace=True) 
+    
+    return brk_df
+
+def make_brk_supports(bundle):
+    """Count supports for unique breakpoint coordinates
+
+    Args:
+        bundle (list): List of ``BreakpointChain``
+
+    Returns:
+        pandas.Series: Count of unique breakpoints, taking chrom, pos, ori into account
+    """
+    data = []
+    for brks in bundle:
+        for brk in brks:
+            chrom, pos, ori = brk.chrom, brk.pos, brk.ori
+            field = [chrom, pos, ori]
+            data.append(field)
+    df = pd.DataFrame(data, columns=['chrom', 'pos', 'ori'])
+    brk_supports = df.value_counts()
+    return brk_supports
+
+
+def make_tra_table(bundle, tra_supports):
+    """
+    Creates a table of translocations with support information.
+
+    This function processes a bundle of `BreakpointChain` objects, extracts translocation
+    coordinates, and combines them with support data into a structured pandas DataFrame.
+
+    Args:
+        bundle (list of BreakpointChain): A list of `BreakpointChain` objects containing 
+            translocation information.
+        tra_supports (dict): A dictionary where keys are translocation coordinate pairs 
+            ((chrom1, pos1, ori1), (chrom2, pos2, ori2)) and values are support counts.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing the translocation table with the following columns:
+            - 'chrom1': Chromosome name of the first breakpoint.
+            - 'pos1': Position of the first breakpoint.
+            - 'ori1': Orientation of the first breakpoint ('+' or '-').
+            - 'chrom2': Chromosome name of the second breakpoint.
+            - 'pos2': Position of the second breakpoint.
+            - 'ori2': Orientation of the second breakpoint ('+' or '-').
+            - 'support': Support count for the translocation.
+
+    Notes:
+        - Translocations are identified by pairs of breakpoints (`BreakpointPair` objects) in
+          the `tras` attribute of each `BreakpointChain`.
+        - Duplicate translocations are removed by maintaining a `set` of seen coordinate pairs.
+        - Infinite values in the resulting DataFrame are replaced with NaN for consistency.
+
+    Example:
+        >>> from your_module import BreakpointChain, make_tra_table
+        >>> bundle = [...]  # List of BreakpointChain objects
+        >>> tra_supports = {
+        ...     (('chr1', 100, '+'), ('chr2', 200, '-')): 10,
+        ...     (('chr1', 300, '-'), ('chr3', 400, '+')): 15
+        ... }
+        >>> tra_df = make_tra_table(bundle, tra_supports)
+        >>> print(tra_df.head())
+           chrom1  pos1 ori1 chrom2  pos2 ori2  support
+        0   chr1   100    +   chr2   200    -       10
+        1   chr1   300    -   chr3   400    +       15
+    """
+    tra_saved = set()
+    data = []
+    for brks in bundle:
+        for tra in brks.tras:
+            coord1 = (tra.brk1.chrom, tra.brk1.pos, tra.brk1.ori)
+            coord2 = (tra.brk2.chrom, tra.brk2.pos, tra.brk2.ori)
+            coord_pair = (coord1, coord2)
+            if coord_pair not in tra_saved:
+                tra_saved.add(coord_pair)
+            else:
+                continue
+            support = tra_supports[coord_pair]
+            field = [*coord1, *coord2, support]
+            data.append(field)
+    
+    tra_cols = ['chrom1', 'pos1', 'ori1', 'chrom2', 'pos2', 'ori2', 'support']
+    tra_df = pd.DataFrame(data, columns=tra_cols)
+    tra_df.replace([-np.inf, np.inf], np.nan, inplace=True) 
+    return tra_df
