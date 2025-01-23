@@ -1,0 +1,6 @@
+qname	chrom	start	end	strand	clip1	match	clip2	pclip1
+read1	chr1	101	201	+	0	100	300	0
+read1	chr2	300	400	+	100	100	200	100
+read1	chr2	700	800	-	100	100	200	200
+read1	chr2	900	1000	+	300	100	0	300
+

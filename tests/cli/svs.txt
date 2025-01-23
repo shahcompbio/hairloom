@@ -1,0 +1,5 @@
+chrom1	pos1	ori1	chrom2	pos2	ori2	support
+chr1	201	+	chr2	300	-	1
+chr2	400	+	chr2	800	+	1
+chr2	700	-	chr2	900	-	1
+

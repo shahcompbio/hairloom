@@ -24,14 +24,132 @@ pip install hairloom
 
 ## Usage
 
+Below is an example usage of the **Hairloom** CLI:
+
+### Input
+
+- A BAM file (`tests/data/test_reads.bam`)..
+- A specific genomic region (`chrom`, `start`, `end`).
+
+
+### 1. Extract Split-Read Alignments
+Use the `extract` command to extract split-read alignments from a BAM file for a specified region.
+
+**Command:**
+
+```bash
+hairloom extract <bam> <chrom> <start> <end>
+```
+
+**Example:**
+
+```bash
+hairloom extract tests/data/test_reads.bam chr1 50 150
+```
+
+**Output:**
+
+A TSV-format of split-read alignment data given to STDOUT:
+
+```bash
+qname   chrom   start   end   strand   clip1   match   clip2   pclip1
+read1   chr1    100     200   +        100     100     0       100
+```
+
+### 2. Generate Breakpoint Table
+Use the `breakpoints` command to generate a table of breakpoints from a BAM file.
+
+**Command:**
+
+```bash
+hairloom breakpoints <bam> <chrom> <start> <end>
+```
+
+**Example:**
+
+```bash
+hairloom breakpoints tests/data/test_reads.bam chr1 50 150
+```
+
+**Output:**
+
+A TSV-format STDOUT stream of breakpoints:
+
+```bash
+chrom   pos     ori     support
+chr1    201     +       1
+chr2    300     -       1
+chr2    400     +       1
+chr2    700     -       1
+chr2    800     +       1
+chr2    900     -       1
+```
+
+
+### 3. Generate Segment Table
+Use the `segments` command to generate a table of breakpoints from a BAM file.
+
+**Command:**
+
+```bash
+hairloom segments <bam> <chrom> <start> <end>
+```
+
+**Example:**
+
+```bash
+hairloom breakpoints tests/data/test_reads.bam chr1 50 150
+```
+
+**Output:**
+
+A TSV-format STDOUT stream of genomic segments:
+
+```bash
+chrom   pos1    pos2    support
+chr2    300     400     1
+chr2    700     800     1
+```
+
+
+
+### 4. Generate SV Table
+Use the `svs` command to generate a table of breakpoints from a BAM file.
+
+**Command:**
+
+```bash
+hairloom svs <bam> <chrom> <start> <end>
+```
+
+**Example:**
+
+```bash
+hairloom svs tests/data/test_reads.bam chr1 50 150
+```
+
+**Output:**
+
+A TSV-format STDOUT stream of breakpoint pairs:
+
+```bash
+chrom1  pos1    ori1    chrom2  pos2    ori2    support
+chr1    201     +       chr2    300     -       1
+chr2    400     +       chr2    800     +       1
+chr2    700     -       chr2    900     -       1
+```
+
+
+## Python Workflow
+
 Below is an example workflow using **Hairloom**:
 
 ### Input
 
-- A BAM file (`example.bam`).
+- A BAM file (`tests/data/test_reads.bam`)..
 - A specific genomic region (`chrom`, `start`, `end`).
 
-### Step 1: Extract Read-Level Split Read Table
+### 1. Extract Read-Level Split Read Table
 
 ```python
 import pysam
@@ -70,7 +188,7 @@ Extracted Read-Level Split-Read Table:
 ```
 ---
 
-### Step 2: Generate Breakpoint Table
+### 2. Generate Breakpoint Table
 
 ```python
 from hairloom import make_bundle, make_brk_table, make_brk_supports
@@ -103,7 +221,7 @@ print(breakpoint_table)
 
 ---
 
-### Step 3: Generate Segment Table
+### 3. Generate Segment Table
 
 ```python
 from hairloom import make_seg_table
@@ -129,7 +247,7 @@ print(segment_table.head())
 
 ---
 
-### Step 4: Generate Translocation Table
+### 4. Generate Translocation Table
 
 ```python
 from hairloom import make_tra_table
@@ -155,7 +273,7 @@ print(translocation_table.head())
 
 ---
 
-## Examples
+## Snippets
 
 ### Full Workflow
 
