@@ -1,0 +1,15 @@
+click
+matplotlib
+myst-parser
+numpy
+pandas
+pydata-sphinx-theme
+pyfaidx
+pysam
+pytest
+PyYAML
+scipy
+setuptools
+sphinxcontrib-napoleon
+sphinx-autodoc-typehints
+tqdm
