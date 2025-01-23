@@ -162,3 +162,44 @@ def test_get_segment_list():
         ('PBEF1NeoTransposon', 4596, 4995), 
         ('chr6', 152942012, 152944889)
     ], segments.list
+
+
+class TestBreakpointPair:
+    """Test suite for the BreakpointPair class."""
+
+    def test_initialization(self):
+        """Test BreakpointPair initialization."""
+        brk1 = Breakpoint("chr1", 100, "+")
+        brk2 = Breakpoint("chr2", 200, "-")
+
+        pair = BreakpointPair(brk1, brk2)
+
+        # Check attributes
+        assert pair.brk1 == brk1
+        assert pair.brk2 == brk2
+        assert pair.aln_segment is False
+
+    def test_repr(self):
+        """Test the __repr__ method."""
+        brk1 = Breakpoint("chr1", 100, "+")
+        brk2 = Breakpoint("chr2", 200, "-")
+
+        pair = BreakpointPair(brk1, brk2)
+        expected_repr = "chr1:100:+-chr2:200:-"
+
+        # Check string representation
+        assert repr(pair) == expected_repr
+
+    def test_attributes_are_independent(self):
+        """Ensure that modifying the breakpoints does not affect the BreakpointPair instance."""
+        brk1 = Breakpoint("chr1", 100, "+")
+        brk2 = Breakpoint("chr2", 200, "-")
+        pair = BreakpointPair(brk1, brk2)
+
+        # Modify brk1 and brk2 attributes
+        brk1.pos = 300
+        brk2.chrom = "chr3"
+
+        # Ensure changes to brk1 and brk2 do not affect the pair
+        assert pair.brk1.pos == 300  # Directly referencing the same brk1 instance
+        assert pair.brk2.chrom == "chr3"  # Directly referencing the same brk2 instance
