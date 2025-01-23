@@ -28,8 +28,6 @@ def bundle():
         Breakpoint('chr1', 1012, '+'),
     ]
     bundle = [BreakpointChain(brk_chain1), BreakpointChain(brk_chain2), BreakpointChain(brk_chain3)]
-    for brk_chain in bundle:
-        brk_chain.get_transitions()
     return bundle
 
 def test_map_similar_coordinate_to_higher_rank(bundle):

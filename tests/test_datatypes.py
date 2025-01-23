@@ -87,7 +87,6 @@ def test_sort_breakpointchain():
         Breakpoint('chr1', 2000, '+'),
         Breakpoint('chr1', 1000, '+'),
     ])
-    brks.get_transitions(sort_transition=True)
     expected_tra0 = 'chr1:1000:+-chr2:1000:+'
     expected_tra1 = 'chr1:1000:+-chr1:2000:+'
     assert str(brks.tras[0]) == expected_tra0
@@ -96,7 +95,7 @@ def test_sort_breakpointchain():
 
 def test_get_transitions():
     df = pd.DataFrame({
-        'chrom': {0: 'chr6', 1: 'PBEF1NeoTransposon', 2: 'chr6'},
+        'chrom': {0: 'chr6', 1: 'chr1', 2: 'chr6'},
         'start': {0: 26424060, 1: 4596, 2: 152942012},
         'end': {0: 26424268, 1: 4995, 2: 152944889},
         'strand': {0: '+', 1: '-', 2: '+'},
@@ -106,16 +105,15 @@ def test_get_transitions():
         'pclip1': {0: 30, 1: 235, 2: 631}
     })
     brks = enumerate_breakpoints(df)
-    brks.get_transitions()
     assert len(brks.tras) == 2, brks.tras
-    assert brks.tras[0].brk1.pos == 26424268, brks.tras[0].brk1.pos
-    assert brks.tras[0].brk2.pos == 4995, brks.tras[0].brk2.pos
+    assert brks.tras[0].brk2.pos == 26424268, brks.tras[0].brk1.pos
+    assert brks.tras[0].brk1.pos == 4995, brks.tras[0].brk2.pos
     assert brks.tras[1].brk1.pos == 4596, brks.tras[1].brk1.pos
     assert brks.tras[1].brk2.pos == 152942012, brks.tras[1].brk2.pos
 
 def test_get_segments():
     df = pd.DataFrame({
-        'chrom': {0: 'chr6', 1: 'PBEF1NeoTransposon', 2: 'chr6'},
+        'chrom': {0: 'chr6', 1: 'chr1', 2: 'chr6'},
         'start': {0: 26424060, 1: 4596, 2: 152942012},
         'end': {0: 26424268, 1: 4995, 2: 152944889},
         'strand': {0: '+', 1: '-', 2: '+'},
@@ -125,10 +123,9 @@ def test_get_segments():
         'pclip1': {0: 30, 1: 235, 2: 631}
     })
     brks = enumerate_breakpoints(df)
-    brks.get_segments()
     assert len(brks.segs) == 1, brks.segs
-    assert brks.segs[0].brk1.pos == 4995, brks.segs[0].brk1.pos
-    assert brks.segs[0].brk2.pos == 4596, brks.segs[0].brk2.pos
+    assert brks.segs[0].brk1.pos == 4596, brks.segs[0].brk1.pos
+    assert brks.segs[0].brk2.pos == 4995, brks.segs[0].brk2.pos
 
 
 def test_get_transition_list():

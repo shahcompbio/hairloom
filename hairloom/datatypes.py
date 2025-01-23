@@ -139,16 +139,16 @@ class BreakpointChain(list):
         segs (list of BreakpointPair): A list of segments (pairs of breakpoints).
 
     Methods:
-        get_transitions(sort_transition=False): Enumerates transitions from the chain.
-        get_segments(): Enumerates segments from the chain.
+        _get_transitions(sort_transition=False): Enumerates transitions from the chain.
+        _get_segments(): Enumerates segments from the chain.
     """
     def __init__(self, brks_iterable):
         super().__init__(brks_iterable)
-        self.tras = []
-        self.segs = []
+        self._get_transitions()
+        self._get_segments()
 
     # enumeration of tras
-    def get_transitions(self, sort_transition=False):
+    def _get_transitions(self, sort_transition=True):
         """
         Enumerates transitions (pairs of breakpoints) in the chain and appends
         them to the `tras` attribute.
@@ -163,10 +163,10 @@ class BreakpointChain(list):
 
         Example:
             >>> chain = BreakpointChain([brk1, brk2, brk3, brk4])
-            >>> chain.get_transitions(sort_transition=True)
             >>> chain.tras
             [BreakpointPair(brk1, brk2), BreakpointPair(brk3, brk4)]
         """
+        self.tras = []
         if len(self) >= 2:
             ix_range = range(0, len(self), 2)
             for i in ix_range:
@@ -179,7 +179,7 @@ class BreakpointChain(list):
                 self.tras.append(tra)
 
     # enumeration of segs
-    def get_segments(self):
+    def _get_segments(self):
         """
         Enumerates segments (pairs of breakpoints) in the chain and appends
         them to the `segs` attribute.
@@ -191,14 +191,17 @@ class BreakpointChain(list):
 
         Example:
             >>> chain = BreakpointChain([brk1, brk2, brk3, brk4, brk5])
-            >>> chain.get_segments()
             >>> chain.segs
             [BreakpointPair(brk2, brk3), BreakpointPair(brk4, brk5)]
         """
+        self.segs = []
         ix_range = range(1, len(self)-1, 2)
         for i in ix_range:
             brk1 = self[i]
             brk2 = self[i+1]
+            if brk1 > brk2:
+                brk1, brk2 = brk2, brk1
+            assert brk1.ori == '-' and brk2.ori == '+' # --- [ READ SEQUENCE ] --- form
             seg = BreakpointPair(brk1, brk2)
             self.segs.append(seg)
 
@@ -504,4 +507,3 @@ class BreakpointPair:
 
     def __repr__(self):
         return f'{self.brk1.chrom}:{self.brk1.pos}:{self.brk1.ori}-{self.brk2.chrom}:{self.brk2.pos}:{self.brk2.ori}'
-

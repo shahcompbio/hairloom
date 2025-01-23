@@ -38,13 +38,15 @@ import pysam
 from hairloom import extract_read_data
 
 # Open the BAM file
-bam_file = pysam.AlignmentFile("example.bam", "rb")
+bam_path = "tests/data/test_reads.bam"
+bam_file = pysam.AlignmentFile(bam_path, "rb")
 
 # Extract split-read alignment table for a region
-chrom, start, end = "chr1", 100000, 101000
+chrom, start, end = "chr1", 50, 150
 read_table = extract_read_data(bam_file, chrom, start, end)
 
-print(read_table.head())
+print("Extracted Read-Level Table:")
+print(read_table)
 ```
 
 **Output**: A table of split-read alignments with columns like:
@@ -58,20 +60,28 @@ print(read_table.head())
 - `match`: Number of matched bases.
 - `pclip1`: Strand-corrected clip length.
 
+```
+Extracted Read-Level Split-Read Table:
+   qname chrom  start   end strand  clip1  match  clip2  pclip1
+0  read1  chr1    101   201      +      0    100    300       0
+1  read1  chr2    300   400      +    100    100    200     100
+2  read1  chr2    700   800      -    100    100    200     200
+3  read1  chr2    900  1000      +    300    100      0     300
+```
 ---
 
 ### Step 2: Generate Breakpoint Table
 
 ```python
-from hairloom import make_brk_table, make_brk_supports
+from hairloom import make_bundle, make_brk_table, make_brk_supports
 
-# Generate breakpoint supports
-brk_supports = make_brk_supports([read_table])
+# Make bundled BreakpointChain from read table
+bundle = make_bundle(read_table)
 
 # Create a breakpoint table
-breakpoint_table = make_brk_table([read_table], brk_supports)
+breakpoint_table = make_brk_table(bundle)
 
-print(breakpoint_table.head())
+print(breakpoint_table)
 ```
 
 **Output**: A table of breakpoints with columns:
@@ -81,6 +91,16 @@ print(breakpoint_table.head())
 - `ori`: Orientation (`+` or `-`).
 - `support`: Support count.
 
+```
+  chrom  pos ori  support
+0  chr1  201   +        1
+1  chr2  300   -        1
+2  chr2  400   +        1
+3  chr2  700   -        1
+4  chr2  800   +        1
+5  chr2  900   -        1
+```
+
 ---
 
 ### Step 3: Generate Segment Table
@@ -89,8 +109,7 @@ print(breakpoint_table.head())
 from hairloom import make_seg_table
 
 # Generate segment table
-segment_supports = {(chrom, 100100, 100500): 10}  # Example segment supports
-segment_table = make_seg_table([read_table], segment_supports)
+segment_table = make_seg_table(bundle)
 
 print(segment_table.head())
 ```
@@ -102,6 +121,12 @@ print(segment_table.head())
 - `pos2`: End position.
 - `support`: Support count.
 
+```
+  chrom  pos1  pos2  support
+0  chr2   300   400        1
+1  chr2   700   800        1
+```
+
 ---
 
 ### Step 4: Generate Translocation Table
@@ -109,13 +134,8 @@ print(segment_table.head())
 ```python
 from hairloom import make_tra_table
 
-# Example translocation supports
-tra_supports = {
-    (("chr1", 100100, "+"), ("chr2", 200200, "-")): 5
-}
-
 # Create a translocation table
-translocation_table = make_tra_table([read_table], tra_supports)
+translocation_table = make_tra_table(bundle)
 
 print(translocation_table.head())
 ```
@@ -125,6 +145,13 @@ print(translocation_table.head())
 - `chrom1`, `pos1`, `ori1`: First breakpoint information.
 - `chrom2`, `pos2`, `ori2`: Second breakpoint information.
 - `support`: Support count.
+
+```
+  chrom1  pos1 ori1 chrom2  pos2 ori2  support
+0   chr1   201    +   chr2   300    -        1
+1   chr2   400    +   chr2   800    +        1
+2   chr2   700    -   chr2   900    -        1
+```
 
 ---
 
@@ -137,31 +164,26 @@ import pysam
 from hairloom import (
     extract_read_data,
     make_brk_table,
-    make_brk_supports,
     make_seg_table,
     make_tra_table,
 )
 
 # Open BAM file
-bam_file = pysam.AlignmentFile("example.bam", "rb")
+bam_file = pysam.AlignmentFile("tests/data/test_reads.bam", "rb")
 
 # Step 1: Extract read-level split-read table
-chrom, start, end = "chr1", 100000, 101000
+chrom, start, end = "chr1", 50, 150
 read_table = extract_read_data(bam_file, chrom, start, end)
+bundle = make_bundle(read_table)
 
 # Step 2: Generate breakpoint table
-brk_supports = make_brk_supports([read_table])
-breakpoint_table = make_brk_table([read_table], brk_supports)
+breakpoint_table = make_brk_table(bundle)
 
 # Step 3: Generate segment table
-segment_supports = {(chrom, 100100, 100500): 10}
-segment_table = make_seg_table([read_table], segment_supports)
+segment_table = make_seg_table(bundle)
 
 # Step 4: Generate translocation table
-tra_supports = {
-    (("chr1", 100100, "+"), ("chr2", 200200, "-")): 5
-}
-translocation_table = make_tra_table([read_table], tra_supports)
+translocation_table = make_tra_table(bundle)
 
 # Print results
 print("Read Table:")

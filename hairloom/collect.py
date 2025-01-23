@@ -114,7 +114,7 @@ def pull_breakpoints_from_reads_in_sv_regions(bam, tra, get_read_table=False, mi
             df = df[df['chrom'].isin(canonical_chroms)] # remove segments in decoys
             _qnames = set(df['qname'].unique().tolist())
             saved_qnames.update(_qnames)
-            _bundle = make_brks_bundle(df)
+            _bundle = make_bundle(df)
             for brks in _bundle:
                 if len(brks) >= min_n_breakpoint:
                     bundle.append(brks)
@@ -122,7 +122,7 @@ def pull_breakpoints_from_reads_in_sv_regions(bam, tra, get_read_table=False, mi
         return bundle, read_info
     return bundle
 
-def make_brks_bundle(reads_df):
+def make_bundle(reads_df):
     """Make a list of ``BreapointChain`` based on alignment table
 
     Args:
@@ -136,7 +136,6 @@ def make_brks_bundle(reads_df):
         brks = enumerate_breakpoints(qdf)
         brks.qname = qname
         brks.info = {'sv':brks.tras, 'qname':brks.qname}
-        brks.get_transitions(sort_transition=False)
         bundle.append(brks)
     return bundle
 

@@ -1,7 +1,8 @@
 import pandas as pd
 from pysam import AlignedSegment
 
-from hairloom.utils import enumerate_breakpoints, get_secondaries, make_split_read_table, make_seg_table, make_brk_table, make_brk_supports, make_tra_table
+from hairloom.datatypes import BreakpointChain, Breakpoint
+from hairloom.utils import enumerate_breakpoints, get_secondaries, make_split_read_table, make_seg_table, make_brk_table, make_tra_table
 
 
 class MockAlignment:
@@ -28,10 +29,9 @@ class MockBreakpoint:
 
 class MockSegment:
     """A mock class to simulate Segment objects."""
-    def __init__(self, brk1, brk2, aln_segment=None):
+    def __init__(self, brk1, brk2):
         self.brk1 = brk1
         self.brk2 = brk2
-        self.aln_segment = aln_segment
 
 
 class MockBreakpointChain:
@@ -43,7 +43,7 @@ class MockBreakpointChain:
 
 def test_enumerate_breakpoints():
     df = pd.DataFrame({
-        'chrom': {0: 'chr6', 1: 'PBEF1NeoTransposon', 2: 'chr6'},
+        'chrom': {0: 'chr6', 1: 'chr1', 2: 'chr6'},
         'start': {0: 26424060, 1: 4596, 2: 152942012},
         'end': {0: 26424268, 1: 4995, 2: 152944889},
         'strand': {0: '+', 1: '-', 2: '+'},
@@ -151,16 +151,15 @@ def test_make_split_read_table():
 
 def test_make_seg_table():
     # Prepare test data
-    brk1 = MockBreakpoint("chr1", 100, "+")
-    brk2 = MockBreakpoint("chr1", 200, "-")
-    segment = MockSegment(brk1, brk2)
-    bundle = [MockBreakpointChain(segs=[segment])]
-
-    seg_supports = {("chr1", 100, 200): 10}
+    brk1 = Breakpoint("chr1", 100, "+")
+    brk2 = Breakpoint("chr1", 200, "+")
+    brk3 = Breakpoint("chr1", 300, "-")
+    brk4 = Breakpoint("chr1", 400, "-")
+    bundle = [BreakpointChain([brk1, brk2, brk3, brk4])]
 
     # Test function
-    result = make_seg_table(bundle, seg_supports)
-    expected = pd.DataFrame({"chrom": ["chr1"], "pos1": [100], "pos2": [200], "support": [10]})
+    result = make_seg_table(bundle)
+    expected = pd.DataFrame({"chrom": ["chr1"], "pos1": [200], "pos2": [300], "support": [1]})
     pd.testing.assert_frame_equal(result, expected)
 
 
@@ -170,47 +169,27 @@ def test_make_brk_table():
     brk2 = MockBreakpoint("chr1", 200, "-")
     bundle = [[brk1, brk2]]
 
-    brk_supports = {("chr1", 100, "+"): 10, ("chr1", 200, "-"): 15}
+    brk_supports = {("chr1", 100, "+"): 1, ("chr1", 200, "-"): 1}
 
     # Test function
-    result = make_brk_table(bundle, brk_supports)
+    result = make_brk_table(bundle)
     expected = pd.DataFrame({
         "chrom": ["chr1", "chr1"],
         "pos": [100, 200],
         "ori": ["+", "-"],
-        "support": [10, 15]
+        "support": [1, 1]
     })
     pd.testing.assert_frame_equal(result, expected)
 
 
-def test_make_brk_supports():
-    # Prepare test data
-    brk1 = MockBreakpoint("chr1", 100, "+")
-    brk2 = MockBreakpoint("chr1", 200, "-")
-    bundle = [[brk1, brk2, brk1]]
-
-    # Test function
-    result = make_brk_supports(bundle)
-    result.index.names = [None, None, None]  # Match the expected index name structure
-    expected = pd.Series(
-        data=[2, 1],
-        index=pd.MultiIndex.from_tuples([("chr1", 100, "+"), ("chr1", 200, "-")]),
-        name="count"
-    )
-    pd.testing.assert_series_equal(result, expected)
-
-
 def test_make_tra_table():
     # Prepare test data
-    brk1 = MockBreakpoint("chr1", 100, "+")
-    brk2 = MockBreakpoint("chr2", 200, "-")
-    translocation = MockSegment(brk1, brk2)
-    bundle = [MockBreakpointChain(tras=[translocation])]
-
-    tra_supports = {(("chr1", 100, "+"), ("chr2", 200, "-")): 5}
+    brk1 = Breakpoint("chr1", 100, "+")
+    brk2 = Breakpoint("chr2", 200, "-")
+    bundle = [BreakpointChain([brk1, brk2])]
 
     # Test function
-    result = make_tra_table(bundle, tra_supports)
+    result = make_tra_table(bundle)
     expected = pd.DataFrame({
         "chrom1": ["chr1"],
         "pos1": [100],
@@ -218,6 +197,6 @@ def test_make_tra_table():
         "chrom2": ["chr2"],
         "pos2": [200],
         "ori2": ["-"],
-        "support": [5]
+        "support": [1]
     })
     pd.testing.assert_frame_equal(result, expected)
