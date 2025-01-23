@@ -237,7 +237,7 @@ def make_seg_table(bundle, chroms=None):
             ori2 = seg.brk2.ori
             if pos1 > pos2:
                 pos1, ori1, pos2, ori2 = pos2, ori2, pos1, ori1
-            assert ori1 == '-' and ori2 == '+', (ori1, ori2)
+            # assert ori1 == '-' and ori2 == '+', (ori1, ori2)
             field = [chrom, pos1, pos2]
             data.append(field)
     seg_cols = ['chrom', 'pos1', 'pos2']

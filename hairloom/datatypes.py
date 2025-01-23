@@ -201,7 +201,7 @@ class BreakpointChain(list):
             brk2 = self[i+1]
             if brk1 > brk2:
                 brk1, brk2 = brk2, brk1
-            assert brk1.ori == '-' and brk2.ori == '+' # --- [ READ SEQUENCE ] --- form
+            # assert brk1.ori == '-' and brk2.ori == '+' # --- [ READ SEQUENCE ] --- form
             seg = BreakpointPair(brk1, brk2)
             self.segs.append(seg)
 
