@@ -122,17 +122,17 @@ def pull_breakpoints_from_reads_in_sv_regions(bam, tra, get_read_table=False, mi
         return bundle, read_info
     return bundle
 
-def make_bundle(reads_df):
+def make_bundle(reads):
     """Make a list of ``BreapointChain`` based on alignment table
 
     Args:
-        reads_df (pandas.DataFrame): Table of read alignment statistics
+        reads (pandas.DataFrame): Table of read alignment statistics
 
     Returns:
         list[BreakpointChain]: List of ``BreakpointChain``
     """
     bundle = []
-    for qname, qdf in reads_df.groupby('qname'):
+    for qname, qdf in reads.groupby('qname'):
         brks = enumerate_breakpoints(qdf)
         brks.qname = qname
         brks.info = {'sv':brks.tras, 'qname':brks.qname}

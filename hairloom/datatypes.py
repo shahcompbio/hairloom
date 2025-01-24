@@ -118,9 +118,105 @@ class SplitAlignment:
         return cigar_tuples
 
 
+class Breakpoint:
+    """Represents a genomic breakpoint with associated properties and methods.
+
+    Attributes:
+        chrom (str): The chromosome name where the breakpoint is located.
+        pos (int): The 1-based position of the breakpoint on the chromosome.
+        ori (str): The orientation of the breakpoint ('+' or '-').
+
+        upstream (str or None): Sequence upstream of the breakpoint, initialized to None.
+        downstream (str or None): Sequence downstream of the breakpoint, initialized to None.
+        seq_rearranged (str or None): Rearranged sequence at the breakpoint, initialized to None.
+        seq_removed (str or None): Removed sequence at the breakpoint, initialized to None.
+
+        chroms (list[str]): List of valid chromosome names, including both standard
+            ('1', '2', ..., 'X', 'Y', 'M') and prefixed ('chr1', 'chr2', ..., 'chrX', 'chrY').
+    """
+    chroms = [str(c) for c in range(1, 22+1)] + ['X', 'Y', 'M']
+    chroms += ['chr'+c for c in chroms]
+    def __init__(self, chrom, pos, orientation):
+        """Initializes a Breakpoint instance.
+
+        Args:
+            chrom (str): The chromosome name where the breakpoint is located.
+            pos (int): The 1-based position of the breakpoint on the chromosome.
+            ori (str): The orientation of the breakpoint ('+' or '-').
+
+        Raises:
+            ValueError: If `ori` is not '+' or '-'.
+        """
+        self.chrom = chrom
+        self.pos = pos
+        self.ori = orientation
+        self.upstream = None
+        self.downstream = None
+        self.seq_rearranged = None
+        self.seq_removed = None
+
+    def get_breakpoint_seqs(self, margin:int, genome:pyfaidx.Fasta):
+        """Retrieves upstream and downstream sequences around the breakpoint.
+
+        Computes rearranged and removed sequences based on the given margin
+        and genome dictionary.
+
+        Args:
+            margin (int): Number of bases to include upstream and downstream of the breakpoint.
+            genome (dict): A dictionary mapping chromosome names to their respective sequences.
+
+        Raises:
+            ValueError: If the chromosome is not found in the genome.
+        """
+        self.upstream, self.downstream = get_breakpoint_seqs(self.chrom, self.pos, margin, genome)
+        if self.ori == '+':
+            self.seq_rearranged = self.upstream
+            self.seq_removed = self.downstream
+        elif self.ori == '-':
+            self.seq_rearranged = self.downstream
+            self.seq_removed = self.upstream
+        else:
+            raise ValueError(f'self.ori = {self.ori}')
+
+    def __repr__(self):
+        return f'{self.chrom}:{self.pos}:{self.ori}'
+
+    def __lt__(self, other):
+        self_chrom_ix = self.chroms.index(self.chrom)
+        other_chrom_ix = self.chroms.index(other.chrom)
+        if self_chrom_ix < other_chrom_ix:
+            return True
+        elif self_chrom_ix == other_chrom_ix and self.pos < other.pos:
+            return True
+        return False
+
+
+class BreakpointPair:
+    """Represents a pair of genomic breakpoints.
+
+    Attributes:
+        brk1 (Breakpoint): The first breakpoint in the pair.
+        brk2 (Breakpoint): The second breakpoint in the pair.
+
+        aln_segment (bool): Indicates whether this pair is part of an alignment segment.
+            Defaults to `False`.
+
+    Methods:
+        __repr__(): Returns a string representation of the breakpoint pair.
+    """
+    def __init__(self, brk1, brk2):
+        self.brk1 = brk1
+        self.brk2 = brk2
+        self.aln_segment = False
+
+    def __repr__(self):
+        return f'{self.brk1.chrom}:{self.brk1.pos}:{self.brk1.ori}-{self.brk2.chrom}:{self.brk2.pos}:{self.brk2.ori}'
+    
+
 class BreakpointChain(list):
     """Represents a chain of genomic breakpoints.
 
+    This will often represent the chain of breakpoints coming from a single read.
     This class extends the Python list to store breakpoints and provides methods
     to enumerate transitions and segments.
 
@@ -142,6 +238,7 @@ class BreakpointChain(list):
         super().__init__(brks_iterable)
         self._get_transitions()
         self._get_segments()
+        self.qname = None # read qname slot
 
     # enumeration of tras
     def _get_transitions(self, sort_transition=True):
@@ -351,7 +448,7 @@ def get_breakpoint_seqs(chrom, pos, margin, genome):
         >>> get_breakpoint_seqs('chr1', 5, 3, genome)
         ('AA', 'AAAA')
     """
-    linear_chroms = set(['chr'+str(c) for c in range(1, 22+1)] + ['chrX', 'chrY'])
+    linear_chroms = Breakpoint.chroms
     assert chrom in genome, chrom
     zpos = pos-1 # zero-based
     chrom_len = len(genome[chrom])
@@ -371,98 +468,3 @@ def get_breakpoint_seqs(chrom, pos, margin, genome):
     else:
         downstream = genome[chrom][zpos : end].seq.upper() # downstream
     return upstream, downstream
-
-
-class Breakpoint:
-    """Represents a genomic breakpoint with associated properties and methods.
-
-    Attributes:
-        chrom (str): The chromosome name where the breakpoint is located.
-        pos (int): The 1-based position of the breakpoint on the chromosome.
-        ori (str): The orientation of the breakpoint ('+' or '-').
-
-        upstream (str or None): Sequence upstream of the breakpoint, initialized to None.
-        downstream (str or None): Sequence downstream of the breakpoint, initialized to None.
-        seq_rearranged (str or None): Rearranged sequence at the breakpoint, initialized to None.
-        seq_removed (str or None): Removed sequence at the breakpoint, initialized to None.
-
-        chroms (list[str]): List of valid chromosome names, including both standard
-            ('1', '2', ..., 'X', 'Y', 'M') and prefixed ('chr1', 'chr2', ..., 'chrX', 'chrY').
-    """
-    chroms = [str(c) for c in range(1, 22+1)] + ['X', 'Y', 'M']
-    chroms += ['chr'+c for c in chroms]
-    def __init__(self, chrom, pos, orientation):
-        """Initializes a Breakpoint instance.
-
-        Args:
-            chrom (str): The chromosome name where the breakpoint is located.
-            pos (int): The 1-based position of the breakpoint on the chromosome.
-            ori (str): The orientation of the breakpoint ('+' or '-').
-
-        Raises:
-            ValueError: If `ori` is not '+' or '-'.
-        """
-        self.chrom = chrom
-        self.pos = pos
-        self.ori = orientation
-        self.upstream = None
-        self.downstream = None
-        self.seq_rearranged = None
-        self.seq_removed = None
-
-    def get_breakpoint_seqs(self, margin:int, genome:pyfaidx.Fasta):
-        """Retrieves upstream and downstream sequences around the breakpoint.
-
-        Computes rearranged and removed sequences based on the given margin
-        and genome dictionary.
-
-        Args:
-            margin (int): Number of bases to include upstream and downstream of the breakpoint.
-            genome (dict): A dictionary mapping chromosome names to their respective sequences.
-
-        Raises:
-            ValueError: If the chromosome is not found in the genome.
-        """
-        self.upstream, self.downstream = get_breakpoint_seqs(self.chrom, self.pos, margin, genome)
-        if self.ori == '+':
-            self.seq_rearranged = self.upstream
-            self.seq_removed = self.downstream
-        elif self.ori == '-':
-            self.seq_rearranged = self.downstream
-            self.seq_removed = self.upstream
-        else:
-            raise ValueError(f'self.ori = {self.ori}')
-
-    def __repr__(self):
-        return f'{self.chrom}:{self.pos}:{self.ori}'
-
-    def __lt__(self, other):
-        self_chrom_ix = self.chroms.index(self.chrom)
-        other_chrom_ix = self.chroms.index(other.chrom)
-        if self_chrom_ix < other_chrom_ix:
-            return True
-        elif self_chrom_ix == other_chrom_ix and self.pos < other.pos:
-            return True
-        return False
-
-
-class BreakpointPair:
-    """Represents a pair of genomic breakpoints.
-
-    Attributes:
-        brk1 (Breakpoint): The first breakpoint in the pair.
-        brk2 (Breakpoint): The second breakpoint in the pair.
-
-        aln_segment (bool): Indicates whether this pair is part of an alignment segment.
-            Defaults to `False`.
-
-    Methods:
-        __repr__(): Returns a string representation of the breakpoint pair.
-    """
-    def __init__(self, brk1, brk2):
-        self.brk1 = brk1
-        self.brk2 = brk2
-        self.aln_segment = False
-
-    def __repr__(self):
-        return f'{self.brk1.chrom}:{self.brk1.pos}:{self.brk1.ori}-{self.brk2.chrom}:{self.brk2.pos}:{self.brk2.ori}'
