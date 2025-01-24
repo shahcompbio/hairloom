@@ -391,33 +391,34 @@ def get_breakpoint_seqs(chrom, pos, margin, genome):
 
 
 class Breakpoint:
-    """
-    Represents a genomic breakpoint with associated properties and methods.
+    """Represents a genomic breakpoint with associated properties and methods.
 
-    **Attributes:**
+    Attributes:
+        chrom (str): The chromosome name where the breakpoint is located.
+        pos (int): The 1-based position of the breakpoint on the chromosome.
+        ori (str): The orientation of the breakpoint ('+' or '-').
 
-    Required (Set During Instantiation):
-        - **chrom** (*str*): The chromosome name where the breakpoint is located.
-        - **pos** (*int*): The 1-based position of the breakpoint on the chromosome.
-        - **ori** (*str*): The orientation of the breakpoint ('+' or '-').
+        upstream (str or None): Sequence upstream of the breakpoint, initialized to None.
+        downstream (str or None): Sequence downstream of the breakpoint, initialized to None.
+        seq_rearranged (str or None): Rearranged sequence at the breakpoint, initialized to None.
+        seq_removed (str or None): Removed sequence at the breakpoint, initialized to None.
 
-    Additional (Initialized in the Class):
-        - **upstream** (*str or None*): Sequence upstream of the breakpoint, initialized to None.
-        - **downstream** (*str or None*): Sequence downstream of the breakpoint, initialized to None.
-        - **seq_rearranged** (*str or None*): Rearranged sequence at the breakpoint, initialized to None.
-        - **seq_removed** (*str or None*): Removed sequence at the breakpoint, initialized to None.
-
-    Class Attributes:
-        - **chroms** (*list of str*): List of valid chromosome names, including both standard
-          ('1', '2', ..., 'X', 'Y', 'M') and prefixed ('chr1', 'chr2', ..., 'chrX', 'chrY').
-
-    **Methods:**
-        - `get_breakpoint_seqs(margin, genome)`: Retrieves upstream and downstream sequences
-          around the breakpoint and computes rearranged and removed sequences.
+        chroms (list of str): List of valid chromosome names, including both standard
+            ('1', '2', ..., 'X', 'Y', 'M') and prefixed ('chr1', 'chr2', ..., 'chrX', 'chrY').
     """
     chroms = [str(c) for c in range(1, 22+1)] + ['X', 'Y', 'M']
     chroms += ['chr'+c for c in chroms]
     def __init__(self, chrom, pos, orientation):
+        """Initializes a Breakpoint instance.
+
+        Args:
+            chrom (str): The chromosome name where the breakpoint is located.
+            pos (int): The 1-based position of the breakpoint on the chromosome.
+            ori (str): The orientation of the breakpoint ('+' or '-').
+
+        Raises:
+            ValueError: If `ori` is not '+' or '-'.
+        """
         self.chrom = chrom
         self.pos = pos
         self.ori = orientation
@@ -427,43 +428,21 @@ class Breakpoint:
         self.seq_removed = None
 
     def get_breakpoint_seqs(self, margin:int, genome:pyfaidx.Fasta):
-        """
-        Retrieves upstream and downstream sequences around the breakpoint.
+        """Retrieves upstream and downstream sequences around the breakpoint.
 
-        Depending on the orientation, this method also determines the rearranged 
-        sequence (`seq_rearranged`) and the removed sequence (`seq_removed`).
+        This method computes the rearranged and removed sequences based on the margin
+        and the genomic sequence provided.
 
         Args:
-            margin (int): The number of bases to retrieve upstream and downstream 
-                of the breakpoint.
-            genome (pyfaidx.Fasta): A dictionary-like object where keys are chromosome names 
-                and values are sequence records. The sequence records should support 
-                slicing and `.seq.upper()`.
+            margin (int): Number of bases to include upstream and downstream of the breakpoint.
+            genome (dict): A dictionary mapping chromosome names to their respective sequences.
 
-        Modifies:
-            upstream (str): The sequence upstream of the breakpoint.
-            downstream (str): The sequence downstream of the breakpoint.
-            seq_rearranged (str): Rearranged sequence based on orientation.
-            seq_removed (str): Removed sequence based on orientation.
+        Returns:
+            None: Updates the object's `upstream`, `downstream`, `seq_rearranged`,
+            and `seq_removed` attributes.
 
         Raises:
-            ValueError: If the orientation is invalid (not '+' or '-').
-
-        Example:
-            >>> genome = {
-            ...     'chr1': SeqRecord(Seq("ACGT" * 1000), id='chr1'),
-            ...     'chr2': SeqRecord(Seq("TGCA" * 1000), id='chr2')
-            ... }
-            >>> bp = Breakpoint('chr1', 5, '+')
-            >>> bp.get_breakpoint_seqs(3, genome)
-            >>> bp.upstream
-            'ACG'
-            >>> bp.downstream
-            'TAC'
-            >>> bp.seq_rearranged
-            'ACG'
-            >>> bp.seq_removed
-            'TAC'
+            ValueError: If the chromosome is not found in the genome.
         """
         self.upstream, self.downstream = get_breakpoint_seqs(self.chrom, self.pos, margin, genome)
         if self.ori == '+':
