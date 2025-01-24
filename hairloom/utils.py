@@ -254,7 +254,7 @@ def make_seg_table(bundle, chroms=None):
             data.append(field)
     seg_cols = ['chrom', 'pos1', 'pos2']
     seg_df = pd.DataFrame(data, columns=seg_cols)
-    seg_df = seg_df.value_counts().reset_index().rename(columns={'count':'support'})
+    seg_df = seg_df.value_counts().reset_index().rename(columns={'count':'support', 0:'support'})
     seg_df.replace([-np.inf, np.inf], np.nan, inplace=True) 
     return seg_df
 
@@ -316,7 +316,7 @@ def make_brk_table(bundle, chroms=None):
 
     brk_cols = ['chrom', 'pos', 'ori']
     brk_df = pd.DataFrame(data, columns=brk_cols)
-    brk_df = brk_df.value_counts().reset_index().rename(columns={'count':'support'})
+    brk_df = brk_df.value_counts().reset_index().rename(columns={'count':'support', 0:'support'})
     brk_df.replace([-np.inf, np.inf], np.nan, inplace=True) 
     
     return brk_df
@@ -377,6 +377,6 @@ def make_tra_table(bundle):
     
     tra_cols = ['chrom1', 'pos1', 'ori1', 'chrom2', 'pos2', 'ori2']
     tra_df = pd.DataFrame(data, columns=tra_cols)
-    tra_df = tra_df.value_counts().reset_index().rename(columns={'count':'support'})
+    tra_df = tra_df.value_counts().reset_index().rename(columns={'count':'support', 0:'support'})
     tra_df.replace([-np.inf, np.inf], np.nan, inplace=True) 
     return tra_df
