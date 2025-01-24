@@ -1,5 +1,5 @@
 import subprocess
-import os
+import importlib.resources as pkg_resources
 
 
 def run_cli_command(command):
@@ -16,8 +16,8 @@ def load_expected_output(file_path):
 
 def test_cli_extract():
     """Test the 'breakpoints' CLI command."""
-    bam_path = "tests/data/test_reads.bam"
-    expected_file = "tests/cli/extract.txt"
+    bam_path = str(pkg_resources.files("hairloom").joinpath('data/test_reads.bam'))
+    expected_file = str(pkg_resources.files("hairloom").joinpath('data/cli/extract.txt'))
     command = ["hairloom", "extract", bam_path, "chr1", "50", "150"]
 
     stdout, stderr, returncode = run_cli_command(command)
@@ -29,8 +29,8 @@ def test_cli_extract():
 
 def test_cli_breakpoints():
     """Test the 'breakpoints' CLI command."""
-    bam_path = "tests/data/test_reads.bam"
-    expected_file = "tests/cli/breakpoints.txt"
+    bam_path = str(pkg_resources.files("hairloom").joinpath('data/test_reads.bam'))
+    expected_file = str(pkg_resources.files("hairloom").joinpath('data/cli/breakpoints.txt'))
     command = ["hairloom", "breakpoints", bam_path, "chr1", "50", "150"]
 
     stdout, stderr, returncode = run_cli_command(command)
@@ -42,8 +42,8 @@ def test_cli_breakpoints():
 
 def test_cli_segments():
     """Test the 'segments' CLI command."""
-    bam_path = "tests/data/test_reads.bam"
-    expected_file = "tests/cli/segments.txt"
+    bam_path = str(pkg_resources.files("hairloom").joinpath('data/test_reads.bam'))
+    expected_file = str(pkg_resources.files("hairloom").joinpath('data/cli/segments.txt'))
     command = ["hairloom", "segments", bam_path, "chr1", "50", "150"]
 
     stdout, stderr, returncode = run_cli_command(command)
@@ -55,8 +55,8 @@ def test_cli_segments():
 
 def test_cli_svs():
     """Test the 'svs' CLI command."""
-    bam_path = "tests/data/test_reads.bam"
-    expected_file = "tests/cli/svs.txt"
+    bam_path = str(pkg_resources.files("hairloom").joinpath('data/test_reads.bam'))
+    expected_file = str(pkg_resources.files("hairloom").joinpath('data/cli/svs.txt'))
     command = ["hairloom", "svs", bam_path, "chr1", "50", "150"]
 
     stdout, stderr, returncode = run_cli_command(command)

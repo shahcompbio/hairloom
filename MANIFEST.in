@@ -1,0 +1,5 @@
+include hairloom/data/*.fasta
+include hairloom/data/*.fasta.fai
+include hairloom/data/*.bam
+include hairloom/data/*.bai
+include hairloom/data/cli/*.txt

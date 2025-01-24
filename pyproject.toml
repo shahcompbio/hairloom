@@ -1,6 +1,6 @@
 [project]
 name = "hairloom"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
     { name="Seongmin Choi", email="soymintc@gmail.com" },
 ]
@@ -32,3 +32,12 @@ dev = ["pytest"]
 
 [project.scripts]
 hairloom = "hairloom.cli:cli"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["hairloom"]
+
+[tool.setuptools.package-data]
+"hairloom" = ["data/*.fasta", "data/*.fasta.fai", "data/*.bam", "data/*.bai", "data/cli/*.txt"]

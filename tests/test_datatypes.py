@@ -1,4 +1,5 @@
 import pytest
+import importlib.resources as pkg_resources
 
 import pyfaidx
 import pandas as pd
@@ -6,6 +7,11 @@ import pandas as pd
 from hairloom.datatypes import get_breakpoint_seqs
 from hairloom.datatypes import (Breakpoint, BreakpointPair, BreakpointChain, Transitions, Segments)
 from hairloom.utils import enumerate_breakpoints
+
+
+def get_fasta_path():
+    """Get the full path of the test_datatypes.fasta file."""
+    return str(pkg_resources.files("hairloom").joinpath('data/test_datatypes.fasta'))
 
 
 @pytest.fixture
@@ -23,7 +29,8 @@ def mock_genome():
     GAAACCCT
     ```
     """
-    return pyfaidx.Fasta("tests/data/test_datatypes.fasta")
+    fasta_path = get_fasta_path()
+    return pyfaidx.Fasta(fasta_path)
 
 @pytest.fixture
 def read_table():

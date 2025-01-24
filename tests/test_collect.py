@@ -1,5 +1,6 @@
 import os
 import pytest
+import importlib.resources as pkg_resources
 
 import pysam
 import numpy as np
@@ -111,14 +112,14 @@ def test_find_presence_of_matching_sv():
     assert (sv1 != expected).sum().sum() == 0, sv1
 
 def test_extract_read_data_1():
-    bam_path = 'tests/data/test.bam'
+    bam_path = str(pkg_resources.files("hairloom").joinpath('data/test.bam'))
     assert os.path.exists(bam_path), f'{bam_path} does not exist.'
     bam = pysam.AlignmentFile(bam_path)
     df = extract_read_data(bam, contig='PBEF1NeoTransposon', start=1, end=2)
     assert df.shape[0] == 0, df
 
 def test_extract_read_data_2():
-    bam_path = 'tests/data/test.bam'
+    bam_path = str(pkg_resources.files("hairloom").joinpath('data/test.bam'))
     assert os.path.exists(bam_path), f'{bam_path} does not exist.'
     bam = pysam.AlignmentFile(bam_path)
     df = extract_read_data(bam, contig='PBEF1NeoTransposon', start=1470, end=1477)
@@ -131,7 +132,7 @@ def test_extract_read_data_3():
         1478, 4996, '-', 288, 3480, 990, 990],
        ['02ce28f5-83e5-53a4-a7ed-96f331c6b305', 'chr10', 51340883,
         51341166, '+', 4466, 281, 11, 4466]])
-    bam_path = 'tests/data/test.bam'
+    bam_path = str(pkg_resources.files("hairloom").joinpath('data/test.bam'))
     assert os.path.exists(bam_path), f'{bam_path} does not exist.'
     bam = pysam.AlignmentFile(bam_path)
     df = extract_read_data(bam, contig='PBEF1NeoTransposon', start=1477, end=1478)
