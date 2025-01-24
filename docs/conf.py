@@ -32,6 +32,8 @@ extensions = [
 
 extensions.append("sphinx.ext.autosectionlabel")
 autosectionlabel_prefix_document = True
+autosummary_generate = True
+autosummary_imported_members = True
 
 autodoc_default_options = {
     "members": True,
@@ -92,7 +94,7 @@ napoleon_use_rtype = True
 napoleon_preprocess_types = False
 napoleon_type_aliases = None
 napoleon_attr_annotations = True
-napoleon_custom_sections = [('Returns', 'params_style')]
+# napoleon_custom_sections = [('Returns', 'params_style')]
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
@@ -104,3 +106,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 html_theme = 'pydata_sphinx_theme'
 html_static_path = ['_static']
+
+nitpick_ignore = [
+    ("py:class", "BreakpointChain"),  # Suppress warnings for BreakpointChain ambiguity
+]

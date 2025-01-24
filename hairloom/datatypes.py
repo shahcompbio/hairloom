@@ -15,10 +15,10 @@ class SplitAlignment:
         start (int): The start position of the alignment on the reference.
         strand (str): The strand information ('+' or '-').
 
-        cigar_tuples (list of tuple): Parsed CIGAR string as a list of (operation, length) tuples.
+        cigar_tuples (list[tuple]): Parsed CIGAR string as a list of (operation, length) tuples.
         primary (NoneType): Placeholder for primary alignment information, initialized to `None`.
         match (int): Total number of matched bases in the alignment.
-        aln_cols (list of str): Column headers for alignment fields.
+        aln_cols (list[str]): Column headers for alignment fields.
         clip1 (int): Length of the first clip (soft/hard) before the matched region.
         clip2 (int): Length of the second clip (soft/hard) after the matched region.
         end (int): The end position of the alignment on the reference.
@@ -121,12 +121,12 @@ class SplitAlignment:
 class BreakpointChain(list):
     """Represents a chain of genomic breakpoints.
 
-    This class extends the Python `list` to store breakpoints and provides methods
+    This class extends the Python list to store breakpoints and provides methods
     to enumerate transitions and segments.
 
     Attributes:
-        tras (list of BreakpointPair): List of transitions (pairs of breakpoints).
-        segs (list of BreakpointPair): List of segments (pairs of breakpoints).
+        tras (list[BreakpointPair]): List of transitions (pairs of breakpoints).
+        segs (list[BreakpointPair]): List of segments (pairs of breakpoints).
 
     Args:
         brks_iterable (iterable): An iterable containing breakpoint objects.
@@ -195,7 +195,7 @@ class Transitions:
     """Calculates transitions (tra) between genomic fragments.
 
     Attributes:
-        list (list of tuple): A list of transitions, where each transition
+        list (list[tuple]): A list of transitions, where each transition
             is a tuple of the form ((chrom1, pos1, ori1), (chrom2, pos2, ori2)).
 
     Args:
@@ -231,7 +231,7 @@ class Transitions:
               ((chrom1, pos1, ori1), (chrom2, pos2, ori2)).
 
         Modifies:
-            list (list of tuple): Appends computed transitions to the `list` attribute.
+            list (list[tuple]): Appends computed transitions to the `list` attribute.
 
         Example:
             >>> df = pd.DataFrame({
@@ -275,7 +275,7 @@ class Segments:
     """Calculates and stores genomic segments (middle fragments).
 
     Attributes:
-        list (list of tuple): A list of segments, each represented as a tuple
+        list (list[tuple]): A list of segments, each represented as a tuple
             (chrom, start, end).
 
     Args:
@@ -308,7 +308,7 @@ class Segments:
             - If a group contains fewer than three fragments, no segments are added.
 
         Modifies:
-            list (list of tuple): Appends computed segments to the `list` attribute.
+            list (list[tuple]): Appends computed segments to the `list` attribute.
 
         Example:
             >>> df = pd.DataFrame({
@@ -386,7 +386,7 @@ class Breakpoint:
         seq_rearranged (str or None): Rearranged sequence at the breakpoint, initialized to None.
         seq_removed (str or None): Removed sequence at the breakpoint, initialized to None.
 
-        chroms (list of str): List of valid chromosome names, including both standard
+        chroms (list[str]): List of valid chromosome names, including both standard
             ('1', '2', ..., 'X', 'Y', 'M') and prefixed ('chr1', 'chr2', ..., 'chrX', 'chrY').
     """
     chroms = [str(c) for c in range(1, 22+1)] + ['X', 'Y', 'M']

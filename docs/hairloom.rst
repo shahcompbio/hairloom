@@ -1,17 +1,21 @@
 hairloom package
-================
+=================
 
 Module contents
 ---------------
+
+.. autosummary::
+   :toctree: _autosummary
+   :recursive:
+
+   hairloom.collect
+   hairloom.datatypes
+   hairloom.utils
 
 .. automodule:: hairloom
    :members:
    :undoc-members:
    :show-inheritance:
-
-.. autosummary::
-    :toctree: _autosummary
-
 
 Submodules
 ----------

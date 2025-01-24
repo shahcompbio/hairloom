@@ -91,7 +91,7 @@ def pull_breakpoints_from_reads_in_sv_regions(bam, tra, get_read_table=False, mi
         margin (int, optional): Margin (bp) from breakpoints to fetch reads. Defaults to 10.
 
     Returns:
-        list: List of ``BreakpointChain``
+        list[BreakpointChain]: A list of BreakpointChain objects
     """
     bundle = []
     saved_qnames = set()
@@ -129,7 +129,7 @@ def make_bundle(reads_df):
         reads_df (pandas.DataFrame): Table of read alignment statistics
 
     Returns:
-        list: List of ``BreakpointChain``
+        list[BreakpointChain]: List of ``BreakpointChain``
     """
     bundle = []
     for qname, qdf in reads_df.groupby('qname'):
@@ -143,7 +143,7 @@ def get_breakpoint_support_from_bundle(bundle):
     """Get breakpoint support count
 
     Args:
-        bundle (list): List of ``BreakpointChain``
+        bundle (list[BreakpointChain]): List of ``BreakpointChain``
 
     Returns:
         collections.Counter: Support for str(``Breakpoint``) coordinates
@@ -164,10 +164,9 @@ def map_similar_coordinate_to_higher_rank(bundle, breakpoint_support, margin=10)
 
     Returns:
         tuple: tuple containing:
-        
-            coord_map (dict): src -> dst coordinate
 
-            coord_map_log (tuple): (max_coord, src_count, max_count) [only for debugging]
+        - coord_map (dict): source -> destination coordinate
+        - coord_map_log (tuple): (max_coord, src_count, max_count) [only for debugging]
     """
     coord_map = {}
     coord_map_log = {}
@@ -197,7 +196,7 @@ def fix_lower_support_coordinates(bundle, coord_map):
         coord_map (dict): Map of str(``Breakpoint``) coordinates
 
     Returns:
-        list: List of ``BreakpointChain``, mapped to fixed coordinates
+        list[BreakpointChain]: List of ``BreakpointChain``, mapped to fixed coordinates
     """
     for cix, brks in enumerate(bundle):
         for bix, brk in enumerate(brks):

@@ -12,13 +12,14 @@ def enumerate_breakpoints(df):
 
     Args:
         df (pandas.DataFrame): A DataFrame containing fragment information, with the following columns:
-            - 'chrom': The chromosome name (str).
-            - 'start': The start position of the fragment (int).
-            - 'end': The end position of the fragment (int).
-            - 'strand': The strand information ('+' or '-').
+
+            - `chrom`: The chromosome name (str).
+            - `start`: The start position of the fragment (int).
+            - `end`: The end position of the fragment (int).
+            - `strand`: The strand information ('+' or '-').
 
     Returns:
-        ``BreakpointChain``: A chain of ``Breakpoint`` objects enumerated from the DataFrame.
+        BreakpointChain: A chain of Breakpoint objects enumerated from the DataFrame.
 
     Notes:
         - For the first fragment in the DataFrame, only the end position is included as a breakpoint.
@@ -76,7 +77,7 @@ def get_secondaries(read):
             BAM or SAM file, that includes tags.
 
     Returns:
-        list of str: A list of secondary alignment strings parsed from the 'SA' tag.
+        list[str]: A list of secondary alignment strings parsed from the 'SA' tag.
             If the 'SA' tag is not present, an empty list is returned.
 
     Example:
@@ -109,27 +110,29 @@ def make_split_read_table(alignments):
     Args:
         alignments (list): A list of alignment objects. Each alignment object is expected
             to have the following attributes:
-                - `read_name` (str): Query name of the read.
-                - `refname` (str): Reference sequence name (chromosome or contig).
-                - `start` (int): Start position of the alignment on the reference.
-                - `end` (int): End position of the alignment on the reference.
-                - `strand` (str): Strand information ('+' or '-').
-                - `clip1` (int): Length of the first soft/hard clip before the matched region.
-                - `clip2` (int): Length of the second soft/hard clip after the matched region.
-                - `match` (int): Total number of matched bases in the alignment.
-                - `pclip1` (int): Strand-corrected length of the first clip.
+
+        - `read_name` (str): Query name of the read.
+        - `refname` (str): Reference sequence name (chromosome or contig).
+        - `start` (int): Start position of the alignment on the reference.
+        - `end` (int): End position of the alignment on the reference.
+        - `strand` (str): Strand information ('+' or '-').
+        - `clip1` (int): Length of the first soft/hard clip before the matched region.
+        - `clip2` (int): Length of the second soft/hard clip after the matched region.
+        - `match` (int): Total number of matched bases in the alignment.
+        - `pclip1` (int): Strand-corrected length of the first clip.
 
     Returns:
         pandas.DataFrame: A DataFrame containing the following columns:
-            - `qname` (str): Query name of the read.
-            - `chrom` (str): Reference sequence name (chromosome or contig).
-            - `start` (int): Start position of the alignment on the reference.
-            - `end` (int): End position of the alignment on the reference.
-            - `strand` (str): Strand information ('+' or '-').
-            - `clip1` (int): Length of the first soft/hard clip before the matched region.
-            - `match` (int): Total number of matched bases in the alignment.
-            - `clip2` (int): Length of the second soft/hard clip after the matched region.
-            - `pclip1` (int): Strand-corrected length of the first clip.
+
+        - `qname` (str): Query name of the read.
+        - `chrom` (str): Reference sequence name (chromosome or contig).
+        - `start` (int): Start position of the alignment on the reference.
+        - `end` (int): End position of the alignment on the reference.
+        - `strand` (str): Strand information ('+' or '-').
+        - `clip1` (int): Length of the first soft/hard clip before the matched region.
+        - `match` (int): Total number of matched bases in the alignment.
+        - `clip2` (int): Length of the second soft/hard clip after the matched region.
+        - `pclip1` (int): Strand-corrected length of the first clip.
 
     Notes:
         - Duplicate rows are removed based on the full set of columns.
@@ -200,18 +203,19 @@ def make_seg_table(bundle, chroms=None):
     coordinates, and combines them with support data into a structured pandas DataFrame.
 
     Args:
-        bundle (list of ``BreakpointChain``): A list of ``BreakpointChain`` objects containing 
+        bundle (list[BreakpointChain]): A list of ``BreakpointChain`` objects containing 
             segment information.
-        chroms (list of str, optional): A list of chromosomes to include. If None, all chromosomes
+        chroms (list[str], optional): A list of chromosomes to include. If None, all chromosomes
             are considered. Defaults to None.
 
     Returns:
         pandas.DataFrame: A DataFrame containing the breakpoint table with the following
-        columns:
-            - `chrom` (str): Chromosome name.
-            - `pos` (int): Position of the breakpoint.
-            - `ori` (str): Orientation of the breakpoint ('+' or '-').
-            - `support` (int): Support count for the breakpoint.
+            columns:
+
+        - `chrom` (str): Chromosome name.
+        - `pos` (int): Position of the breakpoint.
+        - `ori` (str): Orientation of the breakpoint ('+' or '-').
+        - `support` (int): Support count for the breakpoint.
 
     Notes:
         - Segments are filtered based on the `chroms` parameter if provided.
@@ -258,24 +262,25 @@ def make_seg_table(bundle, chroms=None):
 def make_brk_table(bundle, chroms=None):
     """Generates a table of breakpoints with support information.
 
-    This function processes a bundle of `BreakpointChain` objects, extracts
+    This function processes a bundle of ``BreakpointChain`` objects, extracts
     breakpoint coordinates, and organizes them into a structured pandas
     DataFrame. Optionally, the resulting table can be filtered by specific
     chromosomes.
 
     Args:
-        bundle (list[BreakpointChain]): A list of `BreakpointChain` objects containing
+        bundle (list[BreakpointChain]): A list of ``BreakpointChain`` objects containing
             breakpoint information.
         chroms (list[str], optional): A list of chromosome names to include. If None, all
             chromosomes are considered. Defaults to None.
 
     Returns:
         pandas.DataFrame: A DataFrame containing the breakpoint table with the following
-        columns:
-            - `chrom` (str): Chromosome name.
-            - `pos` (int): Position of the breakpoint.
-            - `ori` (str): Orientation of the breakpoint ('+' or '-').
-            - `support` (int): Support count for the breakpoint.
+            columns:
+
+        - `chrom` (str): Chromosome name.
+        - `pos` (int): Position of the breakpoint.
+        - `ori` (str): Orientation of the breakpoint ('+' or '-').
+        - `support` (int): Support count for the breakpoint.
 
     Notes:
         - Breakpoints are filtered based on the `chroms` parameter if provided.
@@ -320,23 +325,23 @@ def make_brk_table(bundle, chroms=None):
 def make_tra_table(bundle):
     """Creates a table of translocations with support information.
 
-    This function processes a bundle of `BreakpointChain` objects, extracts translocation
+    This function processes a bundle of ``BreakpointChain`` objects, extracts translocation
     coordinates, and combines them with support data into a structured pandas DataFrame.
 
     Args:
-        bundle (list of BreakpointChain): A list of `BreakpointChain` objects containing 
+        bundle (list[BreakpointChain]): A list of ``BreakpointChain`` objects containing 
             translocation information.
 
     Returns:
         pandas.DataFrame: A DataFrame containing the following columns:
-        
-            - `chrom1` (str): Chromosome name of the first breakpoint.
-            - `pos1` (int): Position of the first breakpoint.
-            - `ori1` (str): Orientation of the first breakpoint ('+' or '-').
-            - `chrom2` (str): Chromosome name of the second breakpoint.
-            - `pos2` (int): Position of the second breakpoint.
-            - `ori2` (str): Orientation of the second breakpoint ('+' or '-').
-            - `support` (int): Support count for the translocation.
+
+        - `chrom1` (str): Chromosome name of the first breakpoint.
+        - `pos1` (int): Position of the first breakpoint.
+        - `ori1` (str): Orientation of the first breakpoint ('+' or '-').
+        - `chrom2` (str): Chromosome name of the second breakpoint.
+        - `pos2` (int): Position of the second breakpoint.
+        - `ori2` (str): Orientation of the second breakpoint ('+' or '-').
+        - `support` (int): Support count for the translocation.
 
     Notes:
         - Translocations are identified by pairs of breakpoints (`BreakpointPair` objects) in
