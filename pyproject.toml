@@ -12,6 +12,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+packages = ["hairloom"]
 
 [project.urls]
 Homepage = "https://github.com/shahcompbio/hairloom"
