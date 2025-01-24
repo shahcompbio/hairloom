@@ -329,6 +329,7 @@ def make_tra_table(bundle):
 
     Returns:
         pandas.DataFrame: A DataFrame containing the following columns:
+        
             - `chrom1` (str): Chromosome name of the first breakpoint.
             - `pos1` (int): Position of the first breakpoint.
             - `ori1` (str): Orientation of the first breakpoint ('+' or '-').
