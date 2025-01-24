@@ -1,5 +1,5 @@
 hairloom
-=======
+========
 
 .. toctree::
    :maxdepth: 4

@@ -1,11 +1,11 @@
 hairloom package
-===============
+================
 
 Submodules
 ----------
 
 hairloom.cli module
-------------------
+-------------------
 
 .. automodule:: hairloom.cli
    :members:
@@ -13,7 +13,7 @@ hairloom.cli module
    :show-inheritance:
 
 hairloom.collect module
-----------------------
+-----------------------
 
 .. automodule:: hairloom.collect
    :members:
@@ -21,7 +21,7 @@ hairloom.collect module
    :show-inheritance:
 
 hairloom.datatypes module
-------------------------
+-------------------------
 
 .. automodule:: hairloom.datatypes
    :members:
@@ -29,7 +29,7 @@ hairloom.datatypes module
    :show-inheritance:
 
 hairloom.utils module
---------------------
+---------------------
 
 .. automodule:: hairloom.utils
    :members:

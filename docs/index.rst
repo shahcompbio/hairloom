@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to hairloom's documentation!
-===================================
+====================================
 
 .. toctree::
    :maxdepth: 2

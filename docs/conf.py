@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'hairloom'
-copyright = '2024, Seongmin Choi'
+copyright = '2025, Seongmin Choi'
 author = 'Seongmin Choi'
 release = '0.0.2'
 

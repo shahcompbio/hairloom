@@ -7,7 +7,7 @@ def enumerate_breakpoints(df):
     """
     Enumerates breakpoints from a DataFrame of genomic fragments.
 
-    This function generates a `BreakpointChain` object containing `Breakpoint` objects
+    This function generates a ``BreakpointChain`` object containing ``Breakpoint`` objects
     based on the start and end positions of fragments in the input DataFrame. Breakpoints
     at the beginning and end of reads are treated differently to omit read boundaries.
 
@@ -19,7 +19,7 @@ def enumerate_breakpoints(df):
             - 'strand': The strand information ('+' or '-').
 
     Returns:
-        BreakpointChain: A chain of `Breakpoint` objects enumerated from the DataFrame.
+        ``BreakpointChain``: A chain of `Breakpoint` objects enumerated from the DataFrame.
 
     Notes:
         - For the first fragment in the DataFrame, only the end position is included as a breakpoint.
@@ -189,11 +189,11 @@ def make_seg_table(bundle, chroms=None):
     """
     Creates a table of genomic segments with support information.
 
-    This function processes a bundle of `BreakpointChain` objects, extracts genomic segment
+    This function processes a bundle of ``BreakpointChain`` objects, extracts genomic segment
     coordinates, and combines them with support data into a structured pandas DataFrame.
 
     Args:
-        bundle (list of BreakpointChain): A list of `BreakpointChain` objects containing 
+        bundle (list of ``BreakpointChain``): A list of ``BreakpointChain`` objects containing 
             segment information.
         chroms (list of str, optional): A list of chromosomes to include. If None, all chromosomes
             are considered. Defaults to None.
@@ -251,11 +251,11 @@ def make_brk_table(bundle, chroms=None):
     """
     Creates a table of breakpoints with support information.
 
-    This function processes a bundle of `BreakpointChain` objects, extracts breakpoint
+    This function processes a bundle of ``BreakpointChain`` objects, extracts breakpoint
     coordinates, and combines them with support data into a structured pandas DataFrame.
 
     Args:
-        bundle (list of BreakpointChain): A list of `BreakpointChain` objects containing 
+        bundle (list of ``BreakpointChain``): A list of ``BreakpointChain`` objects containing 
             breakpoint information.
         chroms (list of str, optional): A list of chromosomes to include. If None, all chromosomes
             are considered. Defaults to None.
@@ -306,11 +306,11 @@ def make_tra_table(bundle):
     """
     Creates a table of translocations with support information.
 
-    This function processes a bundle of `BreakpointChain` objects, extracts translocation
+    This function processes a bundle of ``BreakpointChain`` objects, extracts translocation
     coordinates, and combines them with support data into a structured pandas DataFrame.
 
     Args:
-        bundle (list of BreakpointChain): A list of `BreakpointChain` objects containing 
+        bundle (list of ``BreakpointChain``): A list of ``BreakpointChain`` objects containing 
             translocation information.
 
     Returns:
@@ -325,7 +325,7 @@ def make_tra_table(bundle):
 
     Notes:
         - Translocations are identified by pairs of breakpoints (`BreakpointPair` objects) in
-          the `tras` attribute of each `BreakpointChain`.
+          the `tras` attribute of each ``BreakpointChain``.
         - Duplicate translocations are removed by maintaining a `set` of seen coordinate pairs.
         - Infinite values in the resulting DataFrame are replaced with NaN for consistency.
 

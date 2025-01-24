@@ -1,4 +1,5 @@
 import re
+import pyfaidx
 
 
 class SplitAlignment:
@@ -393,24 +394,26 @@ class Breakpoint:
     """
     Represents a genomic breakpoint with associated properties and methods.
 
-    Required Attributes (Set During Instantiation):
-        chrom (str): The chromosome name where the breakpoint is located.
-        pos (int): The 1-based position of the breakpoint on the chromosome.
-        ori (str): The orientation of the breakpoint ('+' or '-').
+    **Attributes:**
 
-    Additional Attributes (Initialized in the Class):
-        upstream (str or None): Sequence upstream of the breakpoint, initialized to None.
-        downstream (str or None): Sequence downstream of the breakpoint, initialized to None.
-        seq_rearranged (str or None): Rearranged sequence at the breakpoint, initialized to None.
-        seq_removed (str or None): Removed sequence at the breakpoint, initialized to None.
+    Required (Set During Instantiation):
+        - **chrom** (*str*): The chromosome name where the breakpoint is located.
+        - **pos** (*int*): The 1-based position of the breakpoint on the chromosome.
+        - **ori** (*str*): The orientation of the breakpoint ('+' or '-').
+
+    Additional (Initialized in the Class):
+        - **upstream** (*str or None*): Sequence upstream of the breakpoint, initialized to None.
+        - **downstream** (*str or None*): Sequence downstream of the breakpoint, initialized to None.
+        - **seq_rearranged** (*str or None*): Rearranged sequence at the breakpoint, initialized to None.
+        - **seq_removed** (*str or None*): Removed sequence at the breakpoint, initialized to None.
 
     Class Attributes:
-        chroms (list of str): List of valid chromosome names, including both standard 
-            ('1', '2', ..., 'X', 'Y', 'M') and prefixed ('chr1', 'chr2', ..., 'chrX', 'chrY').
+        - **chroms** (*list of str*): List of valid chromosome names, including both standard
+          ('1', '2', ..., 'X', 'Y', 'M') and prefixed ('chr1', 'chr2', ..., 'chrX', 'chrY').
 
-    Methods:
-        get_breakpoint_seqs(margin, genome): Retrieves upstream and downstream sequences 
-            around the breakpoint and computes rearranged and removed sequences.
+    **Methods:**
+        - `get_breakpoint_seqs(margin, genome)`: Retrieves upstream and downstream sequences
+          around the breakpoint and computes rearranged and removed sequences.
     """
     chroms = [str(c) for c in range(1, 22+1)] + ['X', 'Y', 'M']
     chroms += ['chr'+c for c in chroms]
@@ -423,7 +426,7 @@ class Breakpoint:
         self.seq_rearranged = None
         self.seq_removed = None
 
-    def get_breakpoint_seqs(self, margin, genome):
+    def get_breakpoint_seqs(self, margin:int, genome:pyfaidx.Fasta):
         """
         Retrieves upstream and downstream sequences around the breakpoint.
 
@@ -433,7 +436,7 @@ class Breakpoint:
         Args:
             margin (int): The number of bases to retrieve upstream and downstream 
                 of the breakpoint.
-            genome (dict): A dictionary-like object where keys are chromosome names 
+            genome (pyfaidx.Fasta): A dictionary-like object where keys are chromosome names 
                 and values are sequence records. The sequence records should support 
                 slicing and `.seq.upper()`.
 
