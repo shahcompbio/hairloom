@@ -1,6 +1,18 @@
 hairloom package
 ================
 
+Module contents
+---------------
+
+.. automodule:: hairloom
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autosummary::
+    :toctree: _autosummary
+
+
 Submodules
 ----------
 
@@ -27,14 +39,3 @@ hairloom.utils module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: hairloom
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autosummary::
-    :toctree: _autosummary
