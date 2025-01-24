@@ -182,9 +182,18 @@ class Breakpoint:
         return f'{self.chrom}:{self.pos}:{self.ori}'
 
     def __lt__(self, other):
-        self_chrom_ix = self.chroms.index(self.chrom)
-        other_chrom_ix = self.chroms.index(other.chrom)
-        if self_chrom_ix < other_chrom_ix:
+        self_chrom_ix, other_chrom_ix = None, None
+        if self.chrom in self.chroms:
+            self_chrom_ix = self.chroms.index(self.chrom)
+        if other.chrom in self.chroms:
+            other_chrom_ix = self.chroms.index(other.chrom)
+        if self_chrom_ix and not other_chrom_ix:
+            return False
+        if not self_chrom_ix and other_chrom_ix:
+            return True
+        if not self_chrom_ix and not other_chrom_ix:
+            return self.chrom < other.chrom
+        if self_chrom_ix < other_chrom_ix: # only if both not None
             return True
         elif self_chrom_ix == other_chrom_ix and self.pos < other.pos:
             return True
