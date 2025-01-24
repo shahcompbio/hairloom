@@ -24,10 +24,21 @@ sys.path.insert(0, os.path.abspath('../'))
 extensions = [
     'myst_parser',
     'sphinx.ext.autodoc',
+    "sphinx.ext.autosummary",
     'sphinx.ext.napoleon',
     'sphinx_autodoc_typehints',
     'sphinx.ext.linkcode',
 ]
+
+extensions.append("sphinx.ext.autosectionlabel")
+autosectionlabel_prefix_document = True
+
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "private-members": False,
+    "show-inheritance": True,
+}
 
 # Configure viewcode extension.
 code_url = f"https://github.com/shahcompbio/hairloom/blob/main"

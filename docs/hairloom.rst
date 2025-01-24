@@ -4,14 +4,6 @@ hairloom package
 Submodules
 ----------
 
-hairloom.cli module
--------------------
-
-.. automodule:: hairloom.cli
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 hairloom.collect module
 -----------------------
 
@@ -43,3 +35,6 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. autosummary::
+    :toctree: _autosummary
