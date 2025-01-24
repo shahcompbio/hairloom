@@ -1,12 +1,12 @@
 [project]
 name = "hairloom"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
     { name="Seongmin Choi", email="soymintc@gmail.com" },
 ]
 description = "A package to analyze split reads of long read data"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",

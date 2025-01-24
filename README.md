@@ -18,6 +18,8 @@
 
 ## Installation
 
+Requires `python` >= 3.9 for smooth installation.
+
 ```bash
 pip install hairloom
 ```
