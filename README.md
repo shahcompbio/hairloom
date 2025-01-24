@@ -18,7 +18,8 @@
 
 ## Installation
 
-Requires `python` >= 3.9 for smooth installation.
+- Requires `python` >= 3.9 for smooth installation.
+- Requires `pandas` >=1.1.0 to run CLI commands (as per `requirements.txt`).
 
 ```bash
 pip install hairloom
