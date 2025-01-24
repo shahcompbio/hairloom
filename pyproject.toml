@@ -12,18 +12,18 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-packages = ["hairloom"]
 
 [project.urls]
 Homepage = "https://github.com/shahcompbio/hairloom"
+Documentation = "https://readthedocs.org/projects/hairloom"
 Issues = "https://github.com/shahcompbio/hairloom/issues"
 
 [build-system]
-requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-# Empty is fine
+# Configuration for setuptools_scm (empty for now)
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
@@ -39,6 +39,3 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["hairloom"]
-
-[tool.setuptools.package-data]
-"hairloom" = ["data/*.fasta", "data/*.fasta.fai", "data/*.bam", "data/*.bai", "data/cli/*.txt"]
