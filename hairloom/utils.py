@@ -77,8 +77,8 @@ def get_secondaries(read):
             BAM or SAM file, that includes tags.
 
     Returns:
-        list[str]: A list of secondary alignment strings parsed from the 'SA' tag.
-            If the 'SA' tag is not present, an empty list is returned.
+        list of str: A list of secondary alignment strings parsed from the 'SA' tag.
+        If the 'SA' tag is not present, an empty list is returned.
 
     Example:
         >>> from pysam import AlignedSegment
