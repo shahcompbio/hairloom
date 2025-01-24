@@ -50,20 +50,7 @@ class SplitAlignment:
         self.extract_cigar_field()
         
     def extract_cigar_field(self):
-        """Extracts alignment fields from the CIGAR string.
-
-        Updates the following attributes:
-            clip1 (int): Length of the first clip (soft/hard) before the matched region.
-            clip2 (int): Length of the second clip (soft/hard) after the matched region.
-            match (int): Total number of matched bases in the alignment.
-            end (int): End position of the alignment on the reference.
-            pclip1 (int): Strand-corrected length of the first clip.
-
-        Notes:
-            - The method processes the CIGAR string to calculate the clip lengths, matched bases,
-              and the end position.
-            - Soft and hard clips are identified using specific CIGAR operations.
-        """
+        """Parses the CIGAR string to calculate clip lengths, matched bases, and alignment end position."""
         split_ctags = {4, 5}
         query_consumers = {0, 1, 4, 7, 8}
         reference_consumers = {0, 2, 3, 7, 8}
@@ -97,9 +84,7 @@ class SplitAlignment:
                 used in sequence alignments (e.g., "10M5I20M").
 
         Returns:
-            list of tuple: A list of tuples where each tuple is of the form (operation, length).
-                - Operation: Integer representing the CIGAR operation type (e.g., 0 for 'M', 1 for 'I').
-                - Length: Integer representing the length of that operation.
+            list[tuple[int, int]]: Parsed CIGAR operations and lengths.
 
         Raises:
             ValueError: If the CIGAR string contains invalid operations.
@@ -134,24 +119,24 @@ class SplitAlignment:
 
 
 class BreakpointChain(list):
-    """
-    Represents a chain of breakpoints with methods for identifying transitions
-    and segments.
+    """Represents a chain of genomic breakpoints.
 
-    This class extends the standard Python `list` to store breakpoints and provides
-    functionality for enumerating transitions and segments as pairs of breakpoints.
+    This class extends the Python `list` to store breakpoints and provides methods
+    to enumerate transitions and segments.
 
-    Required Attributes (Set During Instantiation):
-        brks_iterable (iterable): An iterable of breakpoint objects used to initialize
-            the chain. Each element should be a valid breakpoint.
+    Attributes:
+        tras (list of BreakpointPair): List of transitions (pairs of breakpoints).
+        segs (list of BreakpointPair): List of segments (pairs of breakpoints).
 
-    Additional Attributes (Initialized in the Class):
-        tras (list of BreakpointPair): A list of transitions (pairs of breakpoints).
-        segs (list of BreakpointPair): A list of segments (pairs of breakpoints).
+    Args:
+        brks_iterable (iterable): An iterable containing breakpoint objects.
 
-    Methods:
-        _get_transitions(sort_transition=False): Enumerates transitions from the chain.
-        _get_segments(): Enumerates segments from the chain.
+    Example:
+        >>> brk1 = Breakpoint("chr1", 100, "+")
+        >>> brk2 = Breakpoint("chr1", 200, "-")
+        >>> chain = BreakpointChain([brk1, brk2])
+        >>> chain.tras
+        [BreakpointPair(brk1, brk2)]
     """
     def __init__(self, brks_iterable):
         super().__init__(brks_iterable)
@@ -160,22 +145,11 @@ class BreakpointChain(list):
 
     # enumeration of tras
     def _get_transitions(self, sort_transition=True):
-        """
-        Enumerates transitions (pairs of breakpoints) in the chain and appends
-        them to the `tras` attribute.
+        """Enumerates transitions in the chain.
 
         Args:
-            sort_transition (bool, optional): If True, ensures each pair of breakpoints
-                is sorted such that the smaller breakpoint comes first. Defaults to False.
-
-        Notes:
-            - Transitions are created from every other pair of breakpoints in the chain.
-            - If the chain has fewer than 2 breakpoints, no transitions are added.
-
-        Example:
-            >>> chain = BreakpointChain([brk1, brk2, brk3, brk4])
-            >>> chain.tras
-            [BreakpointPair(brk1, brk2), BreakpointPair(brk3, brk4)]
+            sort_transition (bool): If True, ensures transitions are sorted
+                such that the smaller breakpoint comes first. Defaults to True.
         """
         self.tras = []
         if len(self) >= 2:
@@ -218,21 +192,27 @@ class BreakpointChain(list):
 
 
 class Transitions:
-    """
-    A class to calculate and store transitions (tra) between genomic fragments 
-    based on a DataFrame.
+    """Calculates transitions (tra) between genomic fragments.
 
-    Required Attributes (Set During Instantiation):
-        df (pandas.DataFrame): A DataFrame containing fragment information, 
-            including columns like 'qname', 'chrom', 'start', 'end', and 'strand'.
+    Attributes:
+        list (list of tuple): A list of transitions, where each transition
+            is a tuple of the form ((chrom1, pos1, ori1), (chrom2, pos2, ori2)).
 
-    Additional Attributes (Initialized in the Class):
-        list (list of tuple): A list of transitions, where each transition is a tuple 
-            of the form ((chrom1, pos1, ori1), (chrom2, pos2, ori2)).
+    Args:
+        df (pandas.DataFrame): A DataFrame with fragment information,
+            including 'qname', 'chrom', 'start', 'end', and 'strand'.
 
-    Methods:
-        get_list(): Computes the list of transitions based on the DataFrame and 
-            appends them to the `list` attribute.
+    Example:
+        >>> df = pd.DataFrame({
+        ...     'qname': ['read1', 'read1'],
+        ...     'chrom': ['chr1', 'chr2'],
+        ...     'start': [100, 200],
+        ...     'end': [150, 250],
+        ...     'strand': ['+', '-']
+        ... })
+        >>> transitions = Transitions(df)
+        >>> transitions.list
+        [(('chr1', 150, '+'), ('chr2', 200, '-'))]
     """
     def __init__(self, df):
         self.df = df.copy()
@@ -292,20 +272,26 @@ class Transitions:
                 
 
 class Segments:
-    """
-    A class to calculate and store segments (middle fragments) from a DataFrame.
+    """Calculates and stores genomic segments (middle fragments).
 
-    Required Attributes (Set During Instantiation):
-        df (pandas.DataFrame): A DataFrame containing fragment information, 
-            including columns like 'qname', 'chrom', 'start', and 'end'.
+    Attributes:
+        list (list of tuple): A list of segments, each represented as a tuple
+            (chrom, start, end).
 
-    Additional Attributes (Initialized in the Class):
-        list (list of tuple): A list of segments, where each segment is a tuple 
-            of the form (chrom, start, end), representing a genomic fragment.
+    Args:
+        df (pandas.DataFrame): A DataFrame with fragment information,
+            including 'qname', 'chrom', 'start', and 'end'.
 
-    Methods:
-        get_list(): Computes the list of segments based on the DataFrame and 
-            appends them to the `list` attribute.
+    Example:
+        >>> df = pd.DataFrame({
+        ...     'qname': ['read1', 'read1', 'read1'],
+        ...     'chrom': ['chr1', 'chr1', 'chr1'],
+        ...     'start': [100, 200, 300],
+        ...     'end': [150, 250, 350],
+        ... })
+        >>> segments = Segments(df)
+        >>> segments.list
+        [('chr1', 200, 250)]
     """
     def __init__(self, df):
         self.df = df.copy()
@@ -347,36 +333,23 @@ class Segments:
 
 
 def get_breakpoint_seqs(chrom, pos, margin, genome):
-    """
-    Extracts upstream and downstream sequences around a breakpoint from a genome.
-
-    This function retrieves sequences surrounding a specified position (`pos`) on a
-    chromosome (`chrom`) within a given margin, handling both linear and circular chromosomes.
+    """Extracts upstream and downstream sequences around a breakpoint.
 
     Args:
-        chrom (str): The name of the chromosome to retrieve sequences from.
-        pos (int): The 1-based position of the breakpoint on the chromosome.
-        margin (int): The number of bases to retrieve upstream and downstream of the breakpoint.
-        genome (dict): A dictionary-like object where keys are chromosome names and values 
-            are sequence records. The sequence records should support slicing and `.seq.upper()`.
+        chrom (str): Chromosome name.
+        pos (int): 1-based position of the breakpoint.
+        margin (int): Number of bases upstream and downstream to extract.
+        genome (dict): Dictionary mapping chromosome names to sequences.
 
     Returns:
-        tuple of str: A tuple containing two strings:
-            - `upstream`: The sequence upstream of the breakpoint.
-            - `downstream`: The sequence downstream of the breakpoint.
-
-    Notes:
-        - For linear chromosomes, sequences at the boundaries are truncated to ensure they 
-          do not exceed the chromosome length.
-        - For circular chromosomes, sequences wrap around the ends to ensure continuity.
+        tuple[str, str]: A tuple containing:
+            - `upstream`: Sequence upstream of the breakpoint.
+            - `downstream`: Sequence downstream of the breakpoint.
 
     Example:
-        >>> genome = {
-        ...     'chr1': SeqRecord(Seq("ACGT" * 1000), id='chr1'),
-        ...     'chr2': SeqRecord(Seq("TGCA" * 1000), id='chr2')
-        ... }
+        >>> genome = {'chr1': "A" * 1000, 'chr2': "T" * 1000}
         >>> get_breakpoint_seqs('chr1', 5, 3, genome)
-        ('ACG', 'TAC')
+        ('AA', 'AAAA')
     """
     linear_chroms = set(['chr'+str(c) for c in range(1, 22+1)] + ['chrX', 'chrY'])
     assert chrom in genome, chrom
@@ -440,16 +413,12 @@ class Breakpoint:
     def get_breakpoint_seqs(self, margin:int, genome:pyfaidx.Fasta):
         """Retrieves upstream and downstream sequences around the breakpoint.
 
-        This method computes the rearranged and removed sequences based on the margin
-        and the genomic sequence provided.
+        Computes rearranged and removed sequences based on the given margin
+        and genome dictionary.
 
         Args:
             margin (int): Number of bases to include upstream and downstream of the breakpoint.
             genome (dict): A dictionary mapping chromosome names to their respective sequences.
-
-        Returns:
-            None: Updates the object's `upstream`, `downstream`, `seq_rearranged`,
-            and `seq_removed` attributes.
 
         Raises:
             ValueError: If the chromosome is not found in the genome.
@@ -478,14 +447,12 @@ class Breakpoint:
 
 
 class BreakpointPair:
-    """
-    Represents a pair of genomic breakpoints.
+    """Represents a pair of genomic breakpoints.
 
-    Required Attributes (Set During Instantiation):
+    Attributes:
         brk1 (Breakpoint): The first breakpoint in the pair.
         brk2 (Breakpoint): The second breakpoint in the pair.
 
-    Additional Attributes (Initialized in the Class):
         aln_segment (bool): Indicates whether this pair is part of an alignment segment.
             Defaults to `False`.
 
