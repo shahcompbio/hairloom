@@ -4,8 +4,7 @@ import pandas as pd
 from hairloom.datatypes import Breakpoint, BreakpointChain
 
 def enumerate_breakpoints(df):
-    """
-    Enumerates breakpoints from a DataFrame of genomic fragments.
+    """Enumerates breakpoints from a DataFrame of genomic fragments.
 
     This function generates a ``BreakpointChain`` object containing ``Breakpoint`` objects
     based on the start and end positions of fragments in the input DataFrame. Breakpoints
@@ -67,8 +66,7 @@ def enumerate_breakpoints(df):
     return brks
 
 def get_secondaries(read):
-    """
-    Extracts secondary alignments from a sequencing read's 'SA' tag.
+    """Extracts secondary alignments from a sequencing read's 'SA' tag.
 
     This function retrieves secondary alignment information stored in the 'SA' tag
     of a sequencing read. It parses the tag and returns a list of secondary alignments.
@@ -79,7 +77,7 @@ def get_secondaries(read):
 
     Returns:
         list of str: A list of secondary alignment strings parsed from the 'SA' tag.
-        If the 'SA' tag is not present, an empty list is returned.
+            If the 'SA' tag is not present, an empty list is returned.
 
     Example:
         >>> from pysam import AlignedSegment
@@ -102,44 +100,54 @@ def get_secondaries(read):
     return []
 
 def make_split_read_table(alignments):
-    """
-    Creates a table summarizing split-read alignments.
+    """Creates a table summarizing split-read alignments.
 
     This function processes a list of alignment objects, extracting key attributes
     and organizing them into a structured pandas DataFrame. The resulting table
-    is sorted and deduplicated based on read names and alignment positions.
+    is deduplicated and sorted for consistent organization.
 
     Args:
         alignments (list): A list of alignment objects. Each alignment object is expected
             to have the following attributes:
-            - `read_name` (str): The query name of the read.
-            - `refname` (str): The reference sequence name (chromosome or contig).
-            - `start` (int): The start position of the alignment on the reference.
-            - `end` (int): The end position of the alignment on the reference.
-            - `strand` (str): The strand information ('+' or '-').
-            - `clip1` (int): The length of the first soft/hard clip before the matched region.
-            - `clip2` (int): The length of the second soft/hard clip after the matched region.
-            - `match` (int): The total number of matched bases in the alignment.
-            - `pclip1` (int): The strand-corrected length of the first clip.
+                - `read_name` (str): Query name of the read.
+                - `refname` (str): Reference sequence name (chromosome or contig).
+                - `start` (int): Start position of the alignment on the reference.
+                - `end` (int): End position of the alignment on the reference.
+                - `strand` (str): Strand information ('+' or '-').
+                - `clip1` (int): Length of the first soft/hard clip before the matched region.
+                - `clip2` (int): Length of the second soft/hard clip after the matched region.
+                - `match` (int): Total number of matched bases in the alignment.
+                - `pclip1` (int): Strand-corrected length of the first clip.
 
     Returns:
-        pandas.DataFrame: A DataFrame with the following columns:
-            - `qname`: Query name of the read.
-            - `chrom`: Reference sequence name (chromosome or contig).
-            - `start`: Start position of the alignment on the reference.
-            - `end`: End position of the alignment on the reference.
-            - `strand`: Strand information ('+' or '-').
-            - `clip1`: Length of the first soft/hard clip before the matched region.
-            - `match`: Total number of matched bases in the alignment.
-            - `clip2`: Length of the second soft/hard clip after the matched region.
-            - `pclip1`: Strand-corrected length of the first clip.
+        pandas.DataFrame: A DataFrame containing the following columns:
+            - `qname` (str): Query name of the read.
+            - `chrom` (str): Reference sequence name (chromosome or contig).
+            - `start` (int): Start position of the alignment on the reference.
+            - `end` (int): End position of the alignment on the reference.
+            - `strand` (str): Strand information ('+' or '-').
+            - `clip1` (int): Length of the first soft/hard clip before the matched region.
+            - `match` (int): Total number of matched bases in the alignment.
+            - `clip2` (int): Length of the second soft/hard clip after the matched region.
+            - `pclip1` (int): Strand-corrected length of the first clip.
 
     Notes:
-        - The function removes duplicate rows based on the full set of columns.
+        - Duplicate rows are removed based on the full set of columns.
         - The DataFrame is sorted by `qname` and `pclip1` for consistent organization.
 
     Example:
-        >>> from your_module import Alignment, make_split_read_table
+        >>> from hairloom.utils import make_split_read_table
+        >>> class Alignment:
+        ...     def __init__(self, read_name, refname, start, end, strand, clip1, match, clip2, pclip1):
+        ...         self.read_name = read_name
+        ...         self.refname = refname
+        ...         self.start = start
+        ...         self.end = end
+        ...         self.strand = strand
+        ...         self.clip1 = clip1
+        ...         self.match = match
+        ...         self.clip2 = clip2
+        ...         self.pclip1 = pclip1
         >>> alignments = [
         ...     Alignment(read_name="read1", refname="chr1", start=100, end=150,
         ...               strand='+', clip1=10, match=40, clip2=5, pclip1=10),
@@ -186,8 +194,7 @@ def reverse_complement(seq):
 
 
 def make_seg_table(bundle, chroms=None):
-    """
-    Creates a table of genomic segments with support information.
+    """Creates a table of genomic segments with support information.
 
     This function processes a bundle of ``BreakpointChain`` objects, extracts genomic segment
     coordinates, and combines them with support data into a structured pandas DataFrame.
@@ -199,11 +206,12 @@ def make_seg_table(bundle, chroms=None):
             are considered. Defaults to None.
 
     Returns:
-        pandas.DataFrame: A DataFrame containing the segment table with the following columns:
-            - 'chrom': Chromosome name.
-            - 'pos1': Start position of the segment.
-            - 'pos2': End position of the segment.
-            - 'support': Support count for the segment.
+        pandas.DataFrame: A DataFrame containing the breakpoint table with the following
+        columns:
+            - `chrom` (str): Chromosome name.
+            - `pos` (int): Position of the breakpoint.
+            - `ori` (str): Orientation of the breakpoint ('+' or '-').
+            - `support` (int): Support count for the breakpoint.
 
     Notes:
         - Segments are filtered based on the `chroms` parameter if provided.
@@ -310,45 +318,48 @@ def make_brk_table(bundle, chroms=None):
 
 
 def make_tra_table(bundle):
-    """
-    Creates a table of translocations with support information.
+    """Creates a table of translocations with support information.
 
-    This function processes a bundle of ``BreakpointChain`` objects, extracts translocation
+    This function processes a bundle of `BreakpointChain` objects, extracts translocation
     coordinates, and combines them with support data into a structured pandas DataFrame.
 
     Args:
-        bundle (list of ``BreakpointChain``): A list of ``BreakpointChain`` objects containing 
+        bundle (list of BreakpointChain): A list of `BreakpointChain` objects containing 
             translocation information.
 
     Returns:
-        pandas.DataFrame: A DataFrame containing the translocation table with the following columns:
-            - 'chrom1': Chromosome name of the first breakpoint.
-            - 'pos1': Position of the first breakpoint.
-            - 'ori1': Orientation of the first breakpoint ('+' or '-').
-            - 'chrom2': Chromosome name of the second breakpoint.
-            - 'pos2': Position of the second breakpoint.
-            - 'ori2': Orientation of the second breakpoint ('+' or '-').
-            - 'support': Support count for the translocation.
+        pandas.DataFrame: A DataFrame containing the following columns:
+            - `chrom1` (str): Chromosome name of the first breakpoint.
+            - `pos1` (int): Position of the first breakpoint.
+            - `ori1` (str): Orientation of the first breakpoint ('+' or '-').
+            - `chrom2` (str): Chromosome name of the second breakpoint.
+            - `pos2` (int): Position of the second breakpoint.
+            - `ori2` (str): Orientation of the second breakpoint ('+' or '-').
+            - `support` (int): Support count for the translocation.
 
     Notes:
         - Translocations are identified by pairs of breakpoints (`BreakpointPair` objects) in
-          the `tras` attribute of each ``BreakpointChain``.
+          the `tras` attribute of each `BreakpointChain`.
         - Duplicate translocations are removed by maintaining a `set` of seen coordinate pairs.
         - Infinite values in the resulting DataFrame are replaced with NaN for consistency.
 
     Example:
-        >>> from your_module import BreakpointChain, make_tra_table
-        >>> bundle = [
+        >>> from hairloom.datatypes import Breakpoint, BreakpointChain
+        >>> from hairloom.utils import make_tra_table
+        >>> chain1 = BreakpointChain([
         ...     Breakpoint('chr1', 100, '+'),
-        ...     Breakpoint('chr2', 200, '+'),
+        ...     Breakpoint('chr2', 200, '+')
+        ... ])
+        >>> chain2 = BreakpointChain([
         ...     Breakpoint('chr2', 300, '+'),
-        ...     Breakpoint('chr1', 400, '+'),
-        ... ]
+        ...     Breakpoint('chr1', 400, '+')
+        ... ])
+        >>> bundle = [chain1, chain2]
         >>> tra_df = make_tra_table(bundle)
-        >>> print(tra_df.head())  # Sorted by default
+        >>> print(tra_df)
            chrom1  pos1 ori1 chrom2  pos2 ori2  support
         0   chr1   100    +   chr2   200    +       1
-        1   chr1   400    +   chr2   300    +       1
+        1   chr2   300    +   chr1   400    +       1
     """
     data = []
     for brks in bundle:
