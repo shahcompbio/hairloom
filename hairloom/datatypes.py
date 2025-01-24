@@ -3,28 +3,40 @@ import pyfaidx
 
 
 class SplitAlignment:
-    """
-    Represents a split alignment from a sequencing read, parsing its CIGAR string
-    and associated alignment information.
+    """Represents a split alignment from a sequencing read.
 
-    Required Attributes (Set During Instantiation):
-        read_name (str): The name of the read.
-        refname (str): The reference sequence name (chromosome or contig).
+    Parses the CIGAR string and extracts alignment information such as clip lengths,
+    matched bases, and strand-corrected values.
+
+    Attributes:
+        read_name (str): The name of the sequencing read.
+        refname (str): The reference sequence name (e.g., chromosome or contig).
         cigarstring (str): The CIGAR string of the alignment.
         start (int): The start position of the alignment on the reference.
         strand (str): The strand information ('+' or '-').
 
-    Additional Attributes (Initialized in the Class):
         cigar_tuples (list of tuple): Parsed CIGAR string as a list of (operation, length) tuples.
-        primary (None or other): Placeholder for primary alignment information.
-        match (int): Total matched bases in the alignment.
+        primary (NoneType): Placeholder for primary alignment information, initialized to `None`.
+        match (int): Total number of matched bases in the alignment.
         aln_cols (list of str): Column headers for alignment fields.
-        clip1 (int): Length of the first soft/hard clip before the matched region.
-        clip2 (int): Length of the second soft/hard clip after the matched region.
+        clip1 (int): Length of the first clip (soft/hard) before the matched region.
+        clip2 (int): Length of the second clip (soft/hard) after the matched region.
         end (int): The end position of the alignment on the reference.
         pclip1 (int): Strand-corrected length of the first clip.
     """
     def __init__(self, cigarstring, read_name, refname, read_pos, strand):
+        """Initializes the SplitAlignment instance.
+
+        Args:
+            cigarstring (str): The CIGAR string of the alignment.
+            read_name (str): The name of the sequencing read.
+            refname (str): The reference sequence name (chromosome or contig).
+            read_pos (int): The start position of the alignment on the reference.
+            strand (str): The strand information ('+' or '-').
+
+        Raises:
+            ValueError: If the strand is not '+' or '-'.
+        """
         self.read_name = read_name
         self.refname = refname
         self.cigarstring = cigarstring
@@ -38,20 +50,19 @@ class SplitAlignment:
         self.extract_cigar_field()
         
     def extract_cigar_field(self):
-        """
-        Extracts alignment fields from the CIGAR string, calculating clip lengths, 
-        matched bases, and the end position.
+        """Extracts alignment fields from the CIGAR string.
 
-        Modifies:
-            clip1 (int): The length of the first clip before the matched region.
-            clip2 (int): The length of the second clip after the matched region.
-            match (int): The total number of matched bases.
-            end (int): The end position of the alignment on the reference.
-            pclip1 (int): The strand-corrected length of the first clip.
+        Updates the following attributes:
+            clip1 (int): Length of the first clip (soft/hard) before the matched region.
+            clip2 (int): Length of the second clip (soft/hard) after the matched region.
+            match (int): Total number of matched bases in the alignment.
+            end (int): End position of the alignment on the reference.
+            pclip1 (int): Strand-corrected length of the first clip.
 
         Notes:
-            - Soft and hard clips are handled as specified by the `split_ctags` set.
-            - Matched bases and reference positions are updated according to the CIGAR operations.
+            - The method processes the CIGAR string to calculate the clip lengths, matched bases,
+              and the end position.
+            - Soft and hard clips are identified using specific CIGAR operations.
         """
         split_ctags = {4, 5}
         query_consumers = {0, 1, 4, 7, 8}
@@ -79,20 +90,19 @@ class SplitAlignment:
 
     @staticmethod
     def get_cigar_tuples(cigarstring):
-        """
-        Parses a CIGAR string and returns it as a list of tuples.
-
-        Each tuple represents a CIGAR operation and its corresponding length.
+        """Parses a CIGAR string and converts it into a list of operation-length tuples.
 
         Args:
-            cigarstring (str): The CIGAR string to parse. It should follow the standard
-                format used in sequence alignments, e.g., "10M5I20M".
+            cigarstring (str): The CIGAR string to parse, following the standard format
+                used in sequence alignments (e.g., "10M5I20M").
 
         Returns:
-            list of tuple: A list where each tuple is of the form `(operation, length)`,
-            where `operation` is an integer representing the CIGAR operation type
-            (e.g., 0 for 'M', 1 for 'I'), and `length` is an integer specifying the length
-            of that operation.
+            list of tuple: A list of tuples where each tuple is of the form (operation, length).
+                - Operation: Integer representing the CIGAR operation type (e.g., 0 for 'M', 1 for 'I').
+                - Length: Integer representing the length of that operation.
+
+        Raises:
+            ValueError: If the CIGAR string contains invalid operations.
 
         Example:
             >>> cigarstring = "10M5I20M"
@@ -100,16 +110,16 @@ class SplitAlignment:
             [(0, 10), (1, 5), (0, 20)]
 
         Notes:
-            The following CIGAR operations are supported:
-            - 'M' (0): Alignment match (can be a sequence match or mismatch)
-            - 'I' (1): Insertion to the reference
-            - 'D' (2): Deletion from the reference
-            - 'N' (3): Skipped region from the reference
-            - 'S' (4): Soft clipping (clipped sequences present in the read)
-            - 'H' (5): Hard clipping (clipped sequences not present in the read)
-            - 'P' (6): Padding (silent deletion from padded reference)
-            - '=' (7): Sequence match
-            - 'X' (8): Sequence mismatch
+            Supported CIGAR operations:
+                - 'M' (0): Alignment match (can be a sequence match or mismatch).
+                - 'I' (1): Insertion to the reference.
+                - 'D' (2): Deletion from the reference.
+                - 'N' (3): Skipped region from the reference.
+                - 'S' (4): Soft clipping (clipped sequences present in the read).
+                - 'H' (5): Hard clipping (clipped sequences not present in the read).
+                - 'P' (6): Padding (silent deletion from padded reference).
+                - '=' (7): Sequence match.
+                - 'X' (8): Sequence mismatch.
         """
         cigar_types = 'MIDNSHP=X'
         converter = {
