@@ -1,0 +1,4 @@
+chrom	pos1	pos2	support
+chr2	300	400	1
+chr2	700	800	1
+
