@@ -1,6 +1,6 @@
 [project]
 name = "hairloom"
-version = "0.0.4"
+version = "0.0.5"
 authors = [
     { name="Seongmin Choi", email="soymintc@gmail.com" },
 ]
