@@ -31,7 +31,7 @@ jobs:
 
       - name: Install the package
         run: |
-          pip install .
+          pip install -e .
 
       - name: Run tests
         run: |
