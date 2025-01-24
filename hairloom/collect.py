@@ -57,7 +57,7 @@ def extract_read_data(bam:pysam.AlignmentFile, contig:str, start=None, end=None,
 
     Returns:
         pd.DataFrame: A DataFrame containing alignment data for all split reads in the region,
-        concatenated and organized.
+            concatenated and organized.
 
     Notes:
         - The `start` and `end` positions are converted to 0-based coordinates for 

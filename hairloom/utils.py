@@ -19,7 +19,7 @@ def enumerate_breakpoints(df):
             - 'strand': The strand information ('+' or '-').
 
     Returns:
-        ``BreakpointChain``: A chain of `Breakpoint` objects enumerated from the DataFrame.
+        ``BreakpointChain``: A chain of ``Breakpoint`` objects enumerated from the DataFrame.
 
     Notes:
         - For the first fragment in the DataFrame, only the end position is included as a breakpoint.
@@ -248,42 +248,49 @@ def make_seg_table(bundle, chroms=None):
 
 
 def make_brk_table(bundle, chroms=None):
-    """
-    Creates a table of breakpoints with support information.
+    """Generates a table of breakpoints with support information.
 
-    This function processes a bundle of ``BreakpointChain`` objects, extracts breakpoint
-    coordinates, and combines them with support data into a structured pandas DataFrame.
+    This function processes a bundle of `BreakpointChain` objects, extracts
+    breakpoint coordinates, and organizes them into a structured pandas
+    DataFrame. Optionally, the resulting table can be filtered by specific
+    chromosomes.
 
     Args:
-        bundle (list of ``BreakpointChain``): A list of ``BreakpointChain`` objects containing 
+        bundle (list[BreakpointChain]): A list of `BreakpointChain` objects containing
             breakpoint information.
-        chroms (list of str, optional): A list of chromosomes to include. If None, all chromosomes
-            are considered. Defaults to None.
+        chroms (list[str], optional): A list of chromosome names to include. If None, all
+            chromosomes are considered. Defaults to None.
 
     Returns:
-        pandas.DataFrame: A DataFrame containing the breakpoint table with the following columns:
-            - 'chrom': Chromosome name.
-            - 'pos': Position of the breakpoint.
-            - 'ori': Orientation of the breakpoint ('+' or '-').
-            - 'support': Support count for the breakpoint.
+        pandas.DataFrame: A DataFrame containing the breakpoint table with the following
+        columns:
+            - `chrom` (str): Chromosome name.
+            - `pos` (int): Position of the breakpoint.
+            - `ori` (str): Orientation of the breakpoint ('+' or '-').
+            - `support` (int): Support count for the breakpoint.
 
     Notes:
         - Breakpoints are filtered based on the `chroms` parameter if provided.
-        - Infinite values in the resulting DataFrame are replaced with NaN for consistency.
+        - Infinite values in the resulting DataFrame are replaced with NaN to
+          maintain consistency.
 
     Example:
-        >>> from your_module import BreakpointChain, make_brk_table
+        >>> from hairloom.datatypes import Breakpoint, BreakpointChain
+        >>> from hairloom.utils import make_brk_table
         >>> bundle = [
-        ...     Breakpoint('chr1', 100, '+'),
-        ...     Breakpoint('chr2', 200, '+'),
-        ...     Breakpoint('chr2', 300, '+'),
-        ...     Breakpoint('chr1', 400, '+'),
+        ...     BreakpointChain([
+        ...         Breakpoint("chr1", 100, "+"),
+        ...         Breakpoint("chr1", 200, "+"),
+        ...         Breakpoint("chr2", 300, "+"),
+        ...     ]),
         ... ]
-        >>> brk_df = make_brk_table(bundle, chroms=["chr1", "chr2"])
-        >>> print(brk_df.head())
+        >>> chroms = ["chr1", "chr2"]
+        >>> brk_df = make_brk_table(bundle, chroms)
+        >>> print(brk_df)
            chrom  pos ori  support
-        0  chr1  200   +       1
-        1  chr2  300   +       1
+        0  chr1  100   +       1
+        1  chr1  200   +       1
+        2  chr2  300   +       1
     """
     data = []
     for brks in bundle:
