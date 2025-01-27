@@ -1,6 +1,6 @@
 [project]
 name = "hairloom"
-version = "0.0.8"
+version = "0.0.9"
 authors = [
     { name="Seongmin Choi", email="soymintc@gmail.com" },
 ]
@@ -38,4 +38,4 @@ hairloom = "hairloom.cli:cli"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-where = ["hairloom"]
+where = ["."]

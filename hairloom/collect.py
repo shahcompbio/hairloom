@@ -1,6 +1,5 @@
 from collections import Counter
 
-import tqdm
 import pandas as pd
 import pysam
 
