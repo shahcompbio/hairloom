@@ -23,26 +23,27 @@ jobs:
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
+          mamba-version: "*"
           python-version: "3.9"          # Specify your desired Python version
           environment-file: environment.yml  # Optional, if you use an environment.yml file
-          activate-environment: test-env  # Name of the environment to activate
+          activate-environment: hairloom  # Name of the environment to activate
           auto-activate-base: true
   
       # Step 3: Install dependencies using conda
       - name: Install prerequisites with conda
         run: |
-          conda activate test-env
+          conda activate hairloom
           conda install -y -c conda-forge pysam
   
       # Step 4: Install the package using pip
       - name: Install the package
         run: |
-          conda activate test-env
+          conda activate hairloom
           pip install -r requirements.txt
           pip install .
   
       # Step 5: Run tests with pytest
       - name: Run tests
         run: |
-          conda activate test-env
+          conda activate hairloom
           pytest
