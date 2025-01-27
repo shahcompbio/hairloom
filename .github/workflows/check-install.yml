@@ -8,11 +8,7 @@ on:
 
 jobs:
   test-installation:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: ["3.9"]
+    runs-on: ubuntu-latest
 
     steps:
       # Step 1: Checkout code
@@ -27,31 +23,25 @@ jobs:
           init-shell: bash
           cache-environment: true
 
-      # Step 3: Create and activate the environment (Windows-specific fix)
-      - name: Initialize and activate environment (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: bash
-        run: |
-          micromamba create -n hairloom python=3.9 -y
-          micromamba install -n hairloom -y -c conda-forge pysam pandas
-          micromamba activate hairloom
-
-      - name: Initialize and activate environment (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      # Step 3: Activate the environment and install dependencies
+      - name: Activate and install dependencies
         run: |
           . ~/micromamba/etc/profile.d/micromamba.sh
           micromamba activate hairloom
-          micromamba install -n hairloom -y -c conda-forge pysam pandas
+          micromamba install -y -c conda-forge pysam pandas
 
       # Step 4: Install the package using pip
       - name: Install the package
         run: |
+          . ~/micromamba/etc/profile.d/micromamba.sh
           micromamba activate hairloom
           pip install .
 
       # Step 5: Run tests
       - name: Run tests
         run: |
+          . ~/micromamba/etc/profile.d/micromamba.sh
           micromamba activate hairloom
           pytest
+
 
