@@ -98,7 +98,7 @@ def pull_breakpoints_from_reads_in_sv_regions(bam, tra, get_read_table=False, mi
     canonical_chroms = [str(c) for c in range(1, 22+1)] + ['X', 'Y']
     canonical_chroms += ['chr'+c for c in canonical_chroms]
     read_info = pd.DataFrame()
-    for _, row in tqdm.tqdm(tra.iterrows(), total=tra.shape[0]):
+    for _, row in tra.iterrows():
         # row = tra.iloc[6] # breakpoint pair: SV
         chrom1 = row['chromosome_1']
         pos1 = row['position_1']
