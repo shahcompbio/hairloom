@@ -26,7 +26,7 @@ jobs:
           python-version: "3.9"          # Specify your desired Python version
           environment-file: environment.yml  # Optional, if you use an environment.yml file
           activate-environment: test-env  # Name of the environment to activate
-          auto-activate-base: false
+          auto-activate-base: true
   
       # Step 3: Install dependencies using conda
       - name: Install prerequisites with conda
