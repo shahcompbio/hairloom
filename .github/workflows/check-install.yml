@@ -19,33 +19,47 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Minimamba
+      # Step 2: Set up Micromamba
       - uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment.yml
-          init-shell: >-
-            bash
-            powershell
+          init-shell: bash
           cache-environment: true
-          post-cleanup: 'all'
 
-      # Step 3: Install dependencies using mamba
-      - name: Install prerequisites with mamba
+      # Step 3: Initialize Conda/Mamba
+      - name: Initialize micromamba
+        if: matrix.os == 'windows-latest'
         run: |
-          mamba activate hairloom
-          mamba install -y -c mamba-forge pysam
-  
-      # Step 4: Install the package using pip
+          micromamba shell init --shell bash --prefix $CONDA
+          . $CONDA/etc/profile.d/conda.sh
+          micromamba activate hairloom
+        shell: bash
+
+      - name: Initialize mamba on Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          . ~/micromamba/etc/profile.d/micromamba.sh
+          micromamba activate hairloom
+
+      # Step 4: Install prerequisites using mamba
+      - name: Install prerequisites
+        run: |
+          micromamba activate hairloom
+          micromamba install -y -c conda-forge pysam pandas
+        shell: bash
+
+      # Step 5: Install the package using pip
       - name: Install the package
         run: |
-          mamba init
-          mamba activate hairloom
-          pip install -r requirements.txt
+          micromamba activate hairloom
           pip install .
-  
-      # Step 5: Run tests with pytest
+        shell: bash
+
+      # Step 6: Run tests
       - name: Run tests
         run: |
-          mamba init
-          mamba activate hairloom
+          micromamba activate hairloom
           pytest
+        shell: bash
+
+
