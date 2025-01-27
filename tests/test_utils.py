@@ -1,8 +1,11 @@
 import pandas as pd
 from pysam import AlignedSegment
 
+import pytest
+
 from hairloom.datatypes import BreakpointChain, Breakpoint
-from hairloom.utils import enumerate_breakpoints, get_secondaries, make_split_read_table, make_seg_table, make_brk_table, make_tra_table
+from hairloom.utils import (enumerate_breakpoints, get_secondaries, make_split_read_table, make_seg_table, make_brk_table, make_tra_table,
+    is_breakpoints_not_sorted, reverse_complement)
 
 
 class MockAlignment:
@@ -200,3 +203,40 @@ def test_make_tra_table():
         "support": [1]
     })
     pd.testing.assert_frame_equal(result, expected)
+
+
+def test_is_breakpoints_not_sorted():
+    chrom_order = ["chr1", "chr2", "chr3", "chrX", "chrY"]
+
+    # Test for unsorted chromosomes
+    assert is_breakpoints_not_sorted("chr2", 100, "chr1", 200, chrom_order) is True
+
+    # Test for sorted chromosomes
+    assert is_breakpoints_not_sorted("chr1", 200, "chr2", 100, chrom_order) is False
+
+    # Test for same chromosome, unsorted positions
+    assert is_breakpoints_not_sorted("chr1", 300, "chr1", 200, chrom_order) is True
+
+    # Test for same chromosome, sorted positions
+    assert is_breakpoints_not_sorted("chr1", 100, "chr1", 200, chrom_order) is False
+
+    # Test for edge case of equal chromosomes and positions
+    assert is_breakpoints_not_sorted("chr1", 200, "chr1", 200, chrom_order) is False
+
+
+def test_reverse_complement():
+    # Test for a valid DNA sequence
+    assert reverse_complement("ATCG") == "CGAT"
+
+    # Test for a sequence with 'N' (undefined base)
+    assert reverse_complement("ATGCN") == ".GCAT"
+
+    # Test for an empty sequence
+    assert reverse_complement("") == ""
+
+    # Test for a palindrome sequence
+    assert reverse_complement("ATGCAT") == "ATGCAT"
+
+    # Test for case sensitivity
+    with pytest.raises(KeyError):
+        reverse_complement("atcg")  # Lowercase input should raise a KeyError

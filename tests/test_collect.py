@@ -1,6 +1,7 @@
 import os
 import pytest
 from collections import Counter
+from unittest.mock import MagicMock
 import importlib.resources as pkg_resources
 
 import pysam
@@ -11,7 +12,7 @@ from hairloom.datatypes import Breakpoint, BreakpointPair, BreakpointChain
 
 from hairloom.collect import (map_similar_coordinate_to_higher_rank, fix_lower_support_coordinates, 
     get_breakpoint_support_from_bundle, normalize_sv_table, pull_sv_supporting_reads_from_bundle, find_presence_of_matching_sv,
-    extract_read_data)
+    extract_read_data, make_bundle, get_svtype)
 
 @pytest.fixture
 def bundle():
@@ -32,6 +33,86 @@ def bundle():
     bundle = [BreakpointChain(brk_chain1), BreakpointChain(brk_chain2), BreakpointChain(brk_chain3)]
     return bundle
 
+@pytest.fixture
+def mock_bam():
+    # Create a mock object for `pysam.AlignmentFile`
+    bam = MagicMock()
+
+    # Mock the `.fetch()` method to yield mocked reads
+    def fetch(contig=None, start=None, end=None):
+        # Simulate reads based on parameters
+        reads = [
+            MagicMock(
+                reference_name="chr1",
+                pos=100,
+                cigarstring="100M",
+                is_reverse=False,
+                qname="read1",
+                get_tag=MagicMock(return_value="NM:i:1")
+            ),
+            MagicMock(
+                reference_name="chr1",
+                pos=200,
+                cigarstring="50M50S",
+                is_reverse=True,
+                qname="read2",
+                get_tag=MagicMock(return_value="NM:i:2")
+            ),
+        ]
+        for read in reads:
+            yield read
+
+    bam.fetch.side_effect = fetch
+    return bam
+
+@pytest.fixture
+def mock_enumerate_breakpoints(monkeypatch):
+    # Mock `enumerate_breakpoints` to return predefined `BreakpointChain`
+    def mock_function(df):
+        breakpoints = [
+            Breakpoint("chr1", 100, "+"),
+            Breakpoint("chr1", 200, "-"),
+        ]
+        return BreakpointChain(breakpoints)
+
+    # Patch the original `enumerate_breakpoints` function
+    monkeypatch.setattr("hairloom.collect.enumerate_breakpoints", mock_function)
+    return mock_function
+
+# def test_extract_read_data_with_start_and_end(mock_bam):
+#     # Mock reads with secondaries
+#     mock_reads = [
+#         MagicMock(reference_name="chr1", pos=100, cigarstring="100M", is_reverse=False, qname="read1"),
+#         MagicMock(reference_name="chr1", pos=200, cigarstring="50M50S", is_reverse=True, qname="read2")
+#     ]
+#     mock_bam.fetch.return_value = iter(mock_reads)
+
+#     # Call the function
+#     df = extract_read_data(mock_bam, contig="chr1", start=100, end=200, max_reads=10)
+
+#     # Validate the DataFrame
+#     assert isinstance(df, pd.DataFrame)
+#     assert len(df) == len(mock_reads)
+
+# def test_extract_read_data_no_start_or_end(mock_bam):
+#     mock_bam.fetch.return_value = iter([])
+#     df = extract_read_data(mock_bam, contig="chr1", start=None, end=None)
+#     assert df.empty
+
+def test_make_bundle_empty():
+    reads = pd.DataFrame(columns=["qname", "alignment"])
+    bundle = make_bundle(reads)
+    assert bundle == []
+
+def test_make_bundle_with_data(mock_enumerate_breakpoints):
+    reads = pd.DataFrame({
+        "qname": ["read1", "read1", "read2"],
+        "alignment": ["data1", "data2", "data3"]
+    })
+    mock_enumerate_breakpoints.return_value = MagicMock(tras=[], qname=None, info={})
+    bundle = make_bundle(reads)
+    assert len(bundle) == 2
+
 def test_get_breakpoint_support_from_bundle(bundle):
     expected_support = Counter({
         "chr1:1000:+": 1,
@@ -46,13 +127,28 @@ def test_get_breakpoint_support_from_bundle(bundle):
     assert result == expected_support
 
 def test_map_similar_coordinate_to_higher_rank(bundle):
-    #bundle # fixture
+    margin = 10
+    print(f"Called with margin={margin}, bundle size={len(bundle)}")
     breakpoint_support = get_breakpoint_support_from_bundle(bundle)
-    coord_map, coord_map_log = map_similar_coordinate_to_higher_rank(bundle, breakpoint_support, margin=10)
+    coord_map, coord_map_log = map_similar_coordinate_to_higher_rank(bundle, breakpoint_support, margin=margin)
     assert coord_map['chr1:1000:+'] == 'chr1:1001:+', coord_map
     assert coord_map['chr1:1000:-'] == 'chr1:1000:-', coord_map
     assert coord_map['chr1:1011:+'] == 'chr1:1001:+', coord_map
     assert coord_map['chr1:1012:+'] == 'chr1:1012:+', coord_map
+
+# def test_map_similar_coordinate_to_higher_rank():
+#     bundle = [
+#         [Breakpoint("chr1", 100, "+"), Breakpoint("chr1", 110, "+")],
+#         [Breakpoint("chr1", 200, "-")]
+#     ]
+#     breakpoint_support = Counter({
+#         "chr1:100:+": 5,
+#         "chr1:110:+": 3,
+#         "chr1:200:-": 1
+#     })
+#     coord_map, coord_map_log = map_similar_coordinate_to_higher_rank(bundle, breakpoint_support, margin=10)
+#     assert coord_map["chr1:110:+"] == "chr1:100:+"
+#     assert coord_map["chr1:200:-"] == "chr1:200:-"
 
 def test_fix_lower_support_coordinates(bundle):
     breakpoint_support = get_breakpoint_support_from_bundle(bundle)
@@ -149,3 +245,50 @@ def test_extract_read_data():
     bam = pysam.AlignmentFile(bam_path)
     df = extract_read_data(bam, contig='PBEF1NeoTransposon', start=1477, end=1478)
     assert np.all(df.to_numpy().astype(str) == expected.astype(str))
+
+def test_get_svtype_translocation():
+    # Different chromosomes
+    brk1 = Breakpoint("chr1", 100, "+")
+    brk2 = Breakpoint("chr2", 200, "-")
+    tra = BreakpointPair(brk1, brk2)
+    assert get_svtype(tra) == "TRA"
+
+def test_get_svtype_inversion():
+    # Same chromosome, same orientation
+    brk1 = Breakpoint("chr1", 100, "+")
+    brk2 = Breakpoint("chr1", 200, "+")
+    tra = BreakpointPair(brk1, brk2)
+    assert get_svtype(tra) == "INV"
+
+    brk1 = Breakpoint("chr1", 200, "-")
+    brk2 = Breakpoint("chr1", 100, "-")
+    tra = BreakpointPair(brk1, brk2)
+    assert get_svtype(tra) == "INV"
+
+def test_get_svtype_deletion():
+    # Same chromosome, '+-' orientation
+    brk1 = Breakpoint("chr1", 100, "+")
+    brk2 = Breakpoint("chr1", 200, "-")
+    tra = BreakpointPair(brk1, brk2)
+    assert get_svtype(tra) == "DEL"
+
+    tra = BreakpointPair(brk2, brk1)
+    assert get_svtype(tra) == "DEL"
+
+def test_get_svtype_duplication():
+    # Same chromosome, '-+' orientation
+    brk1 = Breakpoint("chr1", 100, "-")
+    brk2 = Breakpoint("chr1", 200, "+")
+    tra = BreakpointPair(brk1, brk2)
+    assert get_svtype(tra) == "DUP"
+
+    tra = BreakpointPair(brk2, brk1)
+    assert get_svtype(tra) == "DUP"
+
+def test_get_svtype_invalid_orientation():
+    # Same chromosome but unsupported orientation
+    brk1 = Breakpoint("chr1", 100, "+")
+    brk2 = Breakpoint("chr1", 200, "*")  # Invalid orientation
+    tra = BreakpointPair(brk1, brk2)
+    with pytest.raises(ValueError):
+        get_svtype(tra)
