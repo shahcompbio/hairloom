@@ -19,33 +19,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Miniconda
-      - name: Set up Miniconda
-        uses: conda-incubator/setup-miniconda@v2
+      # Step 2: Set up Minimamba
+      - uses: mamba-org/setup-micromamba@v2
         with:
-          python-version: "3.9"          # Specify your desired Python version
-          environment-file: environment.yml  # Optional, if you use an environment.yml file
-          activate-environment: hairloom  # Name of the environment to activate
-          auto-activate-base: true
-  
-      # Step 3: Install dependencies using conda
-      - name: Install prerequisites with conda
+          environment-file: environment.yml
+          init-shell: >-
+            bash
+            powershell
+          cache-environment: true
+          post-cleanup: 'all'
+
+      # Step 3: Install dependencies using mamba
+      - name: Install prerequisites with mamba
         run: |
-          conda init
-          conda activate hairloom
-          conda install -y -c conda-forge pysam
+          mamba activate hairloom
+          mamba install -y -c mamba-forge pysam
   
       # Step 4: Install the package using pip
       - name: Install the package
         run: |
-          conda init
-          conda activate hairloom
+          mamba init
+          mamba activate hairloom
           pip install -r requirements.txt
           pip install .
   
       # Step 5: Run tests with pytest
       - name: Run tests
         run: |
-          conda init
-          conda activate hairloom
+          mamba init
+          mamba activate hairloom
           pytest
