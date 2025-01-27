@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11"]  # Test on these Python versions
 
     steps:
       # Step 1: Checkout the repository
@@ -22,24 +22,19 @@ jobs:
       - name: Set up Micromamba
         uses: mamba-org/setup-micromamba@v2
         with:
-          cache-environment: false  # Disable caching to avoid corrupt files
+          cache-environment: false  # Disable caching to avoid using stale packages
 
-      # Step 3: Clear Micromamba Cache
-      - name: Clear Micromamba Cache
-        run: micromamba clean --all --yes
-
-      # Step 4: Create environment and install dependencies
-      - name: Create environment and install dependencies
+      # Step 3: Create environment from environment.yml
+      - name: Create the environment
         run: |
-          micromamba create -n hairloom python=${{ matrix.python-version }} --yes
-          micromamba install -n hairloom -y -c conda-forge -c bioconda pysam=0.22.1 pandas
+          micromamba env create -f environment.yml
 
-      # Step 5: Install the package using pip
-      - name: Install the package
+      # Step 4: Install the package
+      - name: Install package
         run: |
           micromamba run -n hairloom pip install .
 
-      # Step 6: Run tests
+      # Step 5: Activate environment and run tests
       - name: Run tests
         run: |
           micromamba run -n hairloom pytest
