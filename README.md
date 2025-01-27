@@ -18,10 +18,11 @@
 
 ## Installation
 
-- Requires `python` >= 3.9 for smooth installation.
+- Requires `python` >= 3.7 and `pysam` for smooth installation.
 - Requires `pandas` >=1.1.0 to run CLI commands (as per `requirements.txt`).
 
 ```bash
+# conda install -y -c bioconda r pysam # if you don't have pysam installed
 pip install hairloom
 ```
 
