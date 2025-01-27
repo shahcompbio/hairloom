@@ -10,6 +10,10 @@ jobs:
   test-installation:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+
     steps:
       # Step 1: Checkout code
       - name: Checkout code
@@ -22,17 +26,22 @@ jobs:
           environment-file: environment.yml
           cache-environment: true
 
-      # Step 3: Install additional dependencies
+      # Step 3: Update Python version in environment
+      - name: Update Python Version
+        run: |
+          micromamba install -n hairloom -y python=${{ matrix.python-version }}
+
+      # Step 4: Install additional dependencies
       - name: Install dependencies
         run: |
           micromamba install -n hairloom -y -c conda-forge pysam pandas
 
-      # Step 4: Install the package using pip
+      # Step 5: Install the package using pip
       - name: Install the package
         run: |
           micromamba run -n hairloom pip install .
 
-      # Step 5: Run tests
+      # Step 6: Run tests
       - name: Run tests
         run: |
           micromamba run -n hairloom pytest
