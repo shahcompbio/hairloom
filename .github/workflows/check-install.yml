@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.11"]
+        python-version: ["3.9"]
 
     steps:
       # Step 1: Checkout code
@@ -31,12 +31,14 @@ jobs:
       # Step 3: Install dependencies using conda
       - name: Install prerequisites with conda
         run: |
+          conda init
           conda activate hairloom
           conda install -y -c conda-forge pysam
   
       # Step 4: Install the package using pip
       - name: Install the package
         run: |
+          conda init
           conda activate hairloom
           pip install -r requirements.txt
           pip install .
@@ -44,5 +46,6 @@ jobs:
       # Step 5: Run tests with pytest
       - name: Run tests
         run: |
+          conda init
           conda activate hairloom
           pytest
