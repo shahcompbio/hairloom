@@ -1,0 +1,14 @@
+click
+matplotlib
+myst-parser
+numpy
+pandas>=1.1.0
+pydata-sphinx-theme
+pyfaidx
+pytest
+PyYAML
+scipy
+setuptools
+sphinxcontrib-napoleon
+sphinx-autodoc-typehints
+tqdm
