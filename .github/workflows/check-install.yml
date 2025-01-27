@@ -20,28 +20,20 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment.yml
-          init-shell: bash
           cache-environment: true
 
-      # Step 3: Activate the environment and install dependencies
-      - name: Activate and install dependencies
+      # Step 3: Install additional dependencies
+      - name: Install dependencies
         run: |
-          . ~/micromamba/etc/profile.d/micromamba.sh
-          micromamba activate hairloom
-          micromamba install -y -c conda-forge pysam pandas
+          micromamba install -n hairloom -y -c conda-forge pysam pandas
 
       # Step 4: Install the package using pip
       - name: Install the package
         run: |
-          . ~/micromamba/etc/profile.d/micromamba.sh
-          micromamba activate hairloom
-          pip install .
+          micromamba run -n hairloom pip install .
 
       # Step 5: Run tests
       - name: Run tests
         run: |
-          . ~/micromamba/etc/profile.d/micromamba.sh
-          micromamba activate hairloom
-          pytest
-
+          micromamba run -n hairloom pytest
 
