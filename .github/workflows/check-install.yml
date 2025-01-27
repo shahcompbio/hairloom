@@ -24,7 +24,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment.yml
-          cache-environment: true
+          cache-environment: false
 
       # Step 3: Update Python version in environment
       - name: Update Python Version
