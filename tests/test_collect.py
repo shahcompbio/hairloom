@@ -1,5 +1,6 @@
 import os
 import pytest
+from collections import Counter
 import importlib.resources as pkg_resources
 
 import pysam
@@ -30,6 +31,19 @@ def bundle():
     ]
     bundle = [BreakpointChain(brk_chain1), BreakpointChain(brk_chain2), BreakpointChain(brk_chain3)]
     return bundle
+
+def test_get_breakpoint_support_from_bundle(bundle):
+    expected_support = Counter({
+        "chr1:1000:+": 1,
+        "chr2:2000:-": 1,
+        "chr1:1000:-": 1,
+        "chr3:1000:+": 1,
+        "chr1:1001:+": 2,
+        "chr1:1011:+": 1,
+        "chr1:1012:+": 1,
+    })
+    result = get_breakpoint_support_from_bundle(bundle)
+    assert result == expected_support
 
 def test_map_similar_coordinate_to_higher_rank(bundle):
     #bundle # fixture
@@ -111,21 +125,19 @@ def test_find_presence_of_matching_sv():
     sv1['match'] = find_presence_of_matching_sv(sv1, sv2, margin=50)
     assert (sv1 != expected).sum().sum() == 0, sv1
 
-def test_extract_read_data_1():
+def test_extract_read_data():
     bam_path = str(pkg_resources.files("hairloom").joinpath('data/test.bam'))
     assert os.path.exists(bam_path), f'{bam_path} does not exist.'
     bam = pysam.AlignmentFile(bam_path)
     df = extract_read_data(bam, contig='PBEF1NeoTransposon', start=1, end=2)
     assert df.shape[0] == 0, df
 
-def test_extract_read_data_2():
     bam_path = str(pkg_resources.files("hairloom").joinpath('data/test.bam'))
     assert os.path.exists(bam_path), f'{bam_path} does not exist.'
     bam = pysam.AlignmentFile(bam_path)
     df = extract_read_data(bam, contig='PBEF1NeoTransposon', start=1470, end=1477)
     assert df.shape[0] == 0, df
 
-def test_extract_read_data_3():
     expected = np.array([['02ce28f5-83e5-53a4-a7ed-96f331c6b305', 'chr10', 51339923,
         51340887, '+', 35, 960, 3763, 35],
        ['02ce28f5-83e5-53a4-a7ed-96f331c6b305', 'PBEF1NeoTransposon',
