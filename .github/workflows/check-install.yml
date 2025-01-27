@@ -23,7 +23,6 @@ jobs:
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          mamba-version: "*"
           python-version: "3.9"          # Specify your desired Python version
           environment-file: environment.yml  # Optional, if you use an environment.yml file
           activate-environment: hairloom  # Name of the environment to activate
