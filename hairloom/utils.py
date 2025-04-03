@@ -1,3 +1,5 @@
+from typing import Set
+
 import numpy as np
 import pandas as pd
 
@@ -380,3 +382,104 @@ def make_tra_table(bundle):
     tra_df = tra_df.value_counts().reset_index().rename(columns={'count':'support', 0:'support'})
     tra_df.replace([-np.inf, np.inf], np.nan, inplace=True) 
     return tra_df
+
+
+def melt_tra_table(df: pd.DataFrame) -> Set[Breakpoint]:
+    """Converts a DataFrame of structural variants (SVs) into a set of unique breakpoints.
+
+    This function processes a DataFrame with columns representing two breakpoints per row 
+    (`chrom1`, `pos1`, `ori1`, `chrom2`, `pos2`, `ori2`), extracts these breakpoints, and 
+    returns them as a set of `Breakpoint` objects.
+
+    Args:
+        df (pandas.DataFrame): A DataFrame containing structural variant information 
+            with the following columns:
+            - `chrom1` (str): Chromosome of the first breakpoint.
+            - `pos1` (int): Position of the first breakpoint.
+            - `ori1` (str): Orientation of the first breakpoint ('+' or '-').
+            - `chrom2` (str): Chromosome of the second breakpoint.
+            - `pos2` (int): Position of the second breakpoint.
+            - `ori2` (str): Orientation of the second breakpoint ('+' or '-').
+
+    Returns:
+        set[Breakpoint]: A set of unique `Breakpoint` objects representing all breakpoints 
+        found in the DataFrame.
+
+    Notes:
+        - Each row in the DataFrame corresponds to a pair of breakpoints, and this function
+          extracts both breakpoints from each row.
+        - Duplicate breakpoints across rows are automatically removed by the set.
+
+    Example:
+        >>> import pandas as pd
+        >>> from hairloom.datatypes import Breakpoint
+        >>> from hairloom.utils import melt_tra_table
+        >>> data = {
+        ...     'chrom1': ['chr1', 'chr2'],
+        ...     'pos1': [100, 200],
+        ...     'ori1': ['+', '-'],
+        ...     'chrom2': ['chr3', 'chr4'],
+        ...     'pos2': [300, 400],
+        ...     'ori2': ['-', '+']
+        ... }
+        >>> df = pd.DataFrame(data)
+        >>> result = melt_tra_table(df)
+        >>> print(result)
+        {Breakpoint('chr1', 100, '+'), Breakpoint('chr3', 300, '-'),
+         Breakpoint('chr2', 200, '-'), Breakpoint('chr4', 400, '+')}
+    """
+    breakpoints = set(
+        Breakpoint(row['chrom1'], row['pos1'], row['ori1']) 
+        for row in df[['chrom1', 'pos1', 'ori1']].to_dict('records')
+    ).union(
+        Breakpoint(row['chrom2'], row['pos2'], row['ori2']) 
+        for row in df[['chrom2', 'pos2', 'ori2']].to_dict('records')
+    )
+    return breakpoints
+
+
+def melt_brk_table(df: pd.DataFrame) -> Set[Breakpoint]:
+    """
+    Converts a DataFrame of breakpoints into a set of unique `Breakpoint` objects.
+
+    This function processes a DataFrame containing breakpoint data (chromosome, position, 
+    orientation, and support) and returns a set of unique `Breakpoint` objects representing 
+    all breakpoints in the table.
+
+    Args:
+        df (pandas.DataFrame): A DataFrame containing breakpoint information with the 
+            following columns:
+            - `chrom` (str): Chromosome name of the breakpoint.
+            - `pos` (int): Position of the breakpoint.
+            - `ori` (str): Orientation of the breakpoint ('+' or '-').
+            - `support` (int): Support count for the breakpoint.
+
+    Returns:
+        set[Breakpoint]: A set of unique `Breakpoint` objects representing all breakpoints
+        in the DataFrame.
+
+    Notes:
+        - The `support` column is ignored in the resulting `Breakpoint` set, as it is 
+          not part of the `Breakpoint` attributes.
+        - Duplicate breakpoints in the DataFrame are automatically removed by the set.
+
+    Example:
+        >>> import pandas as pd
+        >>> from hairloom.datatypes import Breakpoint
+        >>> from hairloom.utils import melt_brk_table
+        >>> data = {
+        ...     'chrom': ['chr1', 'chr1', 'chr2'],
+        ...     'pos': [10, 100, 20],
+        ...     'ori': ['+', '-', '+'],
+        ...     'support': [10, 5, 2],
+        ... }
+        >>> df = pd.DataFrame(data)
+        >>> result = melt_brk_table(df)
+        >>> print(result)
+        {Breakpoint('chr1', 10, '+'), Breakpoint('chr1', 100, '-'), Breakpoint('chr2', 20, '+')}
+    """
+    # Use pandas vectorized operations to construct Breakpoint objects
+    return {
+        Breakpoint(chrom, pos, ori)
+        for chrom, pos, ori in zip(df['chrom'], df['pos'], df['ori'])
+    }

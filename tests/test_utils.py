@@ -5,7 +5,7 @@ import pytest
 
 from hairloom.datatypes import BreakpointChain, Breakpoint
 from hairloom.utils import (enumerate_breakpoints, get_secondaries, make_split_read_table, make_seg_table, make_brk_table, make_tra_table,
-    is_breakpoints_not_sorted, reverse_complement)
+    is_breakpoints_not_sorted, reverse_complement, melt_tra_table, melt_brk_table)
 
 
 class MockAlignment:
@@ -240,3 +240,33 @@ def test_reverse_complement():
     # Test for case sensitivity
     with pytest.raises(KeyError):
         reverse_complement("atcg")  # Lowercase input should raise a KeyError
+
+
+def test_melt_tra_table():
+    df = pd.DataFrame([
+        ['chr1', 10, '+', 'chr1', 100, '+', 10],
+        ['chr2', 20, '+', 'chr2', 200, '-', 9],
+    ], columns=['chrom1', 'pos1', 'ori1', 'chrom2', 'pos2', 'ori2', 'support'])
+    expected = {
+        Breakpoint('chr1', 10, '+'),
+        Breakpoint('chr1', 100, '+'),
+        Breakpoint('chr2', 20, '+'),
+        Breakpoint('chr2', 200, '-'),
+    }
+    breakpoints = melt_tra_table(df)
+    assert expected == breakpoints, breakpoints
+
+
+def test_melt_brk_table():
+    df = pd.DataFrame([
+        ['chr1', 10, '+', 10],
+        ['chr1', 100, '-', 5],
+        ['chr2', 20, '+', 2],
+    ], columns=['chrom', 'pos', 'ori', 'support'])
+    expected = {
+        Breakpoint('chr1', 10, '+'),
+        Breakpoint('chr1', 100, '-'),
+        Breakpoint('chr2', 20, '+'),
+    }
+    breakpoints = melt_brk_table(df)
+    assert expected == breakpoints, breakpoints

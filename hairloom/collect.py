@@ -1,17 +1,18 @@
 from collections import Counter
 
+import numpy as np
 import pandas as pd
 import pysam
 
 from hairloom.utils import get_secondaries, make_split_read_table, enumerate_breakpoints
 from hairloom.datatypes import SplitAlignment, Breakpoint, BreakpointPair
 
-def extract_split_alignments(reads, max_reads=500) -> list:
+def extract_split_alignments(reads, max_reads=np.inf) -> list:
     """Extract ``SplitAlignment`` objects from IteratorRow with a max_reads parameter
 
     Args:
         reads (pysam.IteratorRow): Reads fetched from a pysam.Alignmentfile
-        max_reads (int, optional): Number of reads to extract at maximum. Defaults to 500.
+        max_reads (int, optional): Number of reads to extract at maximum. Defaults to np.inf.
 
     Returns:
         list: list of ``SplitAlignment`` objects
@@ -38,7 +39,7 @@ def extract_split_alignments(reads, max_reads=500) -> list:
             alignments.append(alignment)
     return alignments
 
-def extract_read_data(bam:pysam.AlignmentFile, contig:str, start=None, end=None, max_reads=500) -> pd.DataFrame:
+def extract_read_data(bam:pysam.AlignmentFile, contig:str, start=None, end=None, max_reads=np.inf) -> pd.DataFrame:
     """
     Extract alignment tables for split reads and concatenate them into a single DataFrame.
 
@@ -52,7 +53,7 @@ def extract_read_data(bam:pysam.AlignmentFile, contig:str, start=None, end=None,
             are fetched from the beginning of the contig. Defaults to None.
         end (int, optional): 1-based end position of the region. If None, reads 
             are fetched to the end of the contig. Defaults to None.
-        max_reads (int, optional): The maximum number of reads to extract. Defaults to 500.
+        max_reads (int, optional): The maximum number of reads to extract. Defaults to np.inf.
 
     Returns:
         pd.DataFrame: A DataFrame containing alignment data for all split reads in the region,

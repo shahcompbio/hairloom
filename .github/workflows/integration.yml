@@ -1,0 +1,58 @@
+name: Coverage
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-installation:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Micromamba
+      - name: Set up Micromamba
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          cache-environment: false  # Disable caching to avoid using stale packages
+
+      # Step 3: Create environment from environment.yml
+      - name: Create the environment
+        run: |
+          micromamba env create -f environment.yml
+
+      # Step 4: Install the package
+      - name: Install package
+        run: |
+          micromamba run -n hairloom pip install .
+
+      # Step 5: Run tests with coverage
+      - name: Run tests
+        run: |
+          micromamba run -n hairloom pytest --cov=hairloom --cov-report=xml
+
+      # Step 6: Generate and update coverage badge
+      - name: Update README with coverage badge
+        run: |
+          COVERAGE=$(python -c "import xml.etree.ElementTree as ET; \
+                      tree = ET.parse('coverage.xml'); \
+                      print(int(float(tree.getroot().get('line-rate'))*100))")
+          echo '<?xml version="1.0" ?><svg xmlns="http://www.w3.org/2000/svg" width="100" height="20"><rect width="100" height="20" fill="#555"/><rect x="60" width="40" height="20" fill="#4c1"/><text x="10" y="15" fill="#fff" font-family="Verdana" font-size="11">coverage </text><text x="65" y="15" fill="#fff" font-family="Verdana" font-size="11">'$COVERAGE'%</text></svg>' > coverage-badge.svg
+          sed -i 's/\[![coverage\](.*)\]/[![coverage](coverage-badge.svg)]/' README.md
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add coverage-badge.svg README.md
+          git commit -m "Update coverage badge in README" || echo "No changes to commit"
+          git push
+        env:
+          ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}

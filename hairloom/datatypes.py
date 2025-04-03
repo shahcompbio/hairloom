@@ -111,7 +111,7 @@ class SplitAlignment:
             cigar_types[i]:i for i in range(len(cigar_types))
         }
         cigar_tuples = []
-        for match in re.finditer('(\d+)([A-Z\=])', cigarstring):
+        for match in re.finditer(r'(\d+)([A-Z=])', cigarstring):
             clen, ctype = match.groups()
             cigar_tuple = (converter[ctype], int(clen))
             cigar_tuples.append(cigar_tuple)
@@ -198,6 +198,18 @@ class Breakpoint:
         elif self_chrom_ix == other_chrom_ix and self.pos < other.pos:
             return True
         return False
+    
+    def __eq__(self, other):
+        if not isinstance(other, Breakpoint):
+            return NotImplemented
+        return (
+            self.chrom == other.chrom and
+            self.pos == other.pos and
+            self.ori == other.ori
+        )
+
+    def __hash__(self):
+        return hash((self.chrom, self.pos, self.ori))
 
 
 class BreakpointPair:
@@ -220,6 +232,17 @@ class BreakpointPair:
 
     def __repr__(self):
         return f'{self.brk1.chrom}:{self.brk1.pos}:{self.brk1.ori}-{self.brk2.chrom}:{self.brk2.pos}:{self.brk2.ori}'
+
+    def __eq__(self, other):
+        if not isinstance(other, BreakpointPair):
+            return NotImplemented
+        return (
+            (self.brk1 == other.brk1 and self.brk2 == other.brk2) or
+            (self.brk1 == other.brk2 and self.brk2 == other.brk1)  # Allow unordered equality
+        )
+
+    def __hash__(self):
+        return hash(frozenset({self.brk1, self.brk2}))
     
 
 class BreakpointChain(list):
@@ -244,6 +267,8 @@ class BreakpointChain(list):
         [BreakpointPair(brk1, brk2)]
     """
     def __init__(self, brks_iterable):
+        if len(brks_iterable) % 2 != 0:
+            raise ValueError("BreakpointChain length must be a multiple of two.")
         super().__init__(brks_iterable)
         self._get_transitions()
         self._get_segments()
