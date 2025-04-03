@@ -60,7 +60,8 @@ Below is an example usage of the **Hairloom** CLI:
 
 
 ### 1. Extract Split-Read Alignments
-Use the `extract` command to extract split-read alignments from a BAM file for a specified region.
+Use the `extract` command to extract split-read alignments from a BAM file for a specified region. 
+The output is a table listing the aligned fragments, ordered according to their position within each read.
 
 **Command:**
 
@@ -79,8 +80,11 @@ hairloom extract tests/data/test_reads.bam chr1 50 150
 A TSV-format of split-read alignment data given to STDOUT:
 
 ```bash
-qname   chrom   start   end   strand   clip1   match   clip2   pclip1
-read1   chr1    100     200   +        100     100     0       100
+qname   chrom   start   end     strand  clip1   match   clip2   pclip1
+read1   chr1    101     201     +       0       100     300     0
+read1   chr2    300     400     +       100     100     200     100
+read1   chr2    700     800     -       100     100     200     200
+read1   chr2    900     1000    +       300     100     0       300
 ```
 
 ### 2. Generate Breakpoint Table
