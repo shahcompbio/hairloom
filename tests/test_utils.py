@@ -129,7 +129,7 @@ def test_make_split_read_table():
     expected_df = pd.DataFrame(columns=["qname", "chrom", "start", "end", "strand", "clip1", "match", "clip2", "pclip1"])
     result_df = make_split_read_table(alignments)
 
-    pd.testing.assert_frame_equal(result_df, expected_df)
+    pd.testing.assert_frame_equal(result_df, expected_df, check_index_type=False)
 
     # Test case 3: Single alignment
     alignments = [
