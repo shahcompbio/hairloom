@@ -29,83 +29,13 @@ jobs:
         run: micromamba run -n hairloom pip install .
 
       - name: Run tests with coverage
-        run: micromamba run -n hairloom pytest --cov=hairloom --cov-report=xml
+        run: micromamba run -n hairloom pytest --cov --cov-branch --cov-report=xml
 
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          name: coverage-${{ matrix.python-version }}
-          path: coverage.xml
-
-  generate-badge:
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Download coverage artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: coverage-artifacts
-
-      - name: Average coverage and generate badge
-      - name: Average coverage and generate badge
-        run: |
-          mkdir -p combined
-          
-          # Copy and rename files
-          for dir in coverage-artifacts/*; do
-            ver=$(basename "$dir")
-            cp "$dir/coverage.xml" "combined/${ver}.xml"
-          done
-
-          # Parse and average coverage
-          total=0.0
-          count=0
-          for file in combined/*.xml; do
-            if [[ -f "$file" ]]; then
-              rate=$(python3 -c "import xml.etree.ElementTree as ET; \
-tree = ET.parse('$file'); \
-rate = tree.getroot().get('line-rate'); \
-print(rate if rate else '0')")
-              echo "$file: $rate"
-              total=$(python3 -c "print($total + float('$rate'))")
-              count=$((count + 1))
-            fi
-          done
-
-          if [ "$count" -eq 0 ]; then
-            echo "No coverage files found. Exiting."
-            exit 1
-          fi
-
-          avg=$(python3 -c "print(round(($total / $count) * 100))")
-          echo "Average coverage: $avg%"
-
-          # Badge color
-          if [ "$avg" -lt 70 ]; then
-            color="#e05d44"
-          elif [ "$avg" -lt 90 ]; then
-            color="#dfb317"
-          else
-            color="#4c1"
-          fi
-
-          echo "Badge color: $color"
-
-          # Create SVG
-          echo '<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="100" height="20"><rect width="100" height="20" fill="#555"/><rect x="60" width="40" height="20" fill="'$color'"/><text x="10" y="15" fill="#fff" font-family="Verdana" font-size="11">coverage </text><text x="65" y="15" fill="#fff" font-family="Verdana" font-size="11">'$avg'%</text></svg>' > coverage-badge.svg
-
-      - name: Update README with badge
-        run: |
-          sed -i 's|\[![coverage\](.*)\]|\[![coverage](coverage-badge.svg)\]|' README.md
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add coverage-badge.svg README.md
-          git commit -m "Update coverage badge" || echo "No changes to commit"
-          git pull --rebase
-          git push
-        env:
-          ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          flags: ${{ matrix.python-version }}
+          name: hairloom-matrix
+          verbose: true

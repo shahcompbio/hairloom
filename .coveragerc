@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = hairloom
+
+[report]
+skip_covered = True
