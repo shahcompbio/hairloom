@@ -2,8 +2,7 @@
 
 <!-- index.rst content start -->
 
-[![coverage](https://github.com/shahcompbio/hairloom/actions/workflows/check-code-coverage.yml/badge.svg?event=push)](https://github.com/shahcompbio/hairloom/actions/workflows/check-code-coverage.yml)
-[![pytest CI](https://github.com/shahcompbio/hairloom/actions/workflows/check-install.yml/badge.svg)](https://github.com/shahcompbio/hairloom/actions/workflows/check-install.yml)
+[![coverage](coverage-badge.svg)](https://github.com/shahcompbio/hairloom/actions/workflows/integration.yml)
 
 **Hairloom** is a Python package for analyzing split-read alignments from long-read sequencing data. It provides tools to extract read-level split-read tables from BAM files and process these alignments into breakpoint, segment, and translocation tables for downstream analysis.
 
