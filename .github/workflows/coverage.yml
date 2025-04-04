@@ -25,17 +25,11 @@ jobs:
       - name: Install package
         run: micromamba run -n hairloom pip install .
 
-      - name: Run tests with coverage
-        run: |
-          micromamba run -n hairloom pytest \
-            --cov=hairloom \
-            --cov-report=xml \
-            --cov-config=.coveragerc
+      - name: Run tests and collect coverage
+        run: micromamba run -n hairloom pytest --cov=. --cov-report=xml:coverage-service.xml
 
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.xml
-          name: hairloom-python-3.11
-          verbose: true
+      - name: Upload coverage to Codecov (CLI)
+        run: |
+          curl -Os https://cli.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -f coverage-service.xml -t ${{ secrets.CODECOV_TOKEN }} -n "service-${{ github.run_id }}" -F service --verbose --fail-on-error

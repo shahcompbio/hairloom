@@ -1,12 +1,7 @@
 [run]
 branch = True
-source = hairloom
-
-[paths]
-source =
-    hairloom
-    */hairloom
-    */*/hairloom
+source = .
 
 [report]
 skip_covered = True
+show_missing = True
