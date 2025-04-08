@@ -7,9 +7,11 @@ jobs:
       - image: cimg/python:3.9-node
     steps:
       - checkout
-      - python/install-packages:
-          pkg-manager: pip
-          packages: pytest
+      - run:
+          name: Install dependencies
+          command: |
+            pip install -e .[dev] || pip install .  # if you have extras like `.[dev]`
+            pip install pytest
       - run:
           name: Run tests
           command: pytest --junitxml=junit.xml || ((($? == 5)) && echo 'Did not find any tests to run.')
