@@ -26,7 +26,7 @@ jobs:
         run: micromamba run -n hairloom pip install .
 
       - name: Run tests and collect coverage
-        run: micromamba run -n hairloom pytest --cov=. --cov-report=xml:coverage.xml
+        run: micromamba run -n hairloom pytest --cov=hairloom --cov-report=xml:coverage.xml
 
       - name: Upload coverage to Codecov
         run: |
