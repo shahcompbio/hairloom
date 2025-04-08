@@ -23,7 +23,7 @@ jobs:
         run: micromamba env create -f environment.yml
 
       - name: Install package
-        run: micromamba run -n hairloom pip install .
+        run: micromamba run -n hairloom pip install -e .
 
       - name: Run tests and collect coverage
         run: micromamba run -n hairloom pytest --cov=hairloom --cov-report=xml:coverage.xml
