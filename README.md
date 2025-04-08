@@ -32,19 +32,19 @@ pip install hairloom
 Check integrity of the installation with `pytest`:
 ```bash
 $ pytest
-============================ test session starts =============================
+========================= test session starts =========================
 platform linux -- Python 3.11.8, pytest-8.1.1, pluggy-1.4.0
 rootdir: /data1/shahs3/users/chois7/projects/hairloom
 configfile: pyproject.toml
 plugins: cov-5.0.0, anyio-4.3.0
-collected 29 items
+collected 47 items
 
-tests/test_cli.py ....                                                 [ 13%]
-tests/test_collect.py ........                                         [ 41%]
-tests/test_datatypes.py ...........                                    [ 79%]
-tests/test_utils.py ......                                             [100%]
+tests/test_cli.py ....                                          [  8%]
+tests/test_collect.py ..............                            [ 38%]
+tests/test_datatypes.py ...................                     [ 78%]
+tests/test_utils.py ..........                                  [100%]
 
-============================= 29 passed in 3.43s =============================
+========================= 47 passed in 4.19s ==========================
 ```
 
 ---
