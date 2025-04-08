@@ -28,17 +28,8 @@ jobs:
       - name: Run tests and collect coverage
         run: micromamba run -n hairloom pytest --cov=hairloom --cov-report=xml:coverage.xml
 
-      - name: Download Codecov CLI
+      - name: Upload coverage to Codecov (CLI)
         run: |
           curl -Os https://cli.codecov.io/latest/linux/codecov
           chmod +x codecov
-
-      - name: Upload coverage to Codecov
-        run: |
-          ./codecov upload \
-            --file coverage.xml \
-            --token ${{ secrets.CODECOV_TOKEN }} \
-            --name "service-${{ github.run_id }}" \
-            --flag service \
-            --verbose \
-            --fail-on-error
+          ./codecov -f coverage.xml -t ${{ secrets.CODECOV_TOKEN }} -n "service-${{ github.run_id }}" -F service --verbose --fail-on-error

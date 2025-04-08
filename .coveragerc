@@ -1,7 +1,0 @@
-[run]
-branch = True
-source = .
-
-[report]
-skip_covered = True
-show_missing = True
