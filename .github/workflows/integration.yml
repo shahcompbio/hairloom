@@ -20,13 +20,14 @@ jobs:
       - name: Set up Micromamba
         uses: mamba-org/setup-micromamba@v2
         with:
+          environment-name: hairloom
+          create-args: >-
+            python=${{ matrix.python-version }}
+            --file environment.yml
           cache-environment: false
-
-      - name: Create environment
-        run: micromamba env create -f environment.yml
 
       - name: Install package
         run: micromamba run -n hairloom pip install .
 
       - name: Run tests
-        run: micromamba run -n hairloom pytest
+        run: micromamba run -n hairloom pytest --cov=hairloom --cov-report=term-missing
