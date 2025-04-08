@@ -8,7 +8,8 @@ jobs:
     steps:
       - checkout
       - python/install-packages:
-          pkg-manager: pip-dist
+          pkg-manager: pip
+          packages: pytest
       - run:
           name: Run tests
           command: pytest --junitxml=junit.xml || ((($? == 5)) && echo 'Did not find any tests to run.')
