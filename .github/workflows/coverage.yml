@@ -32,7 +32,7 @@ jobs:
         run: |
           curl -Os https://cli.codecov.io/latest/linux/codecov
           chmod +x codecov
-          ./codecov \
+          ./codecov --verbose upload-process \
              --file coverage.xml \
              --token ${{ secrets.CODECOV_TOKEN }} \
              --name "service-${{ github.run_id }}" \
